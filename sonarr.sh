@@ -6,7 +6,9 @@ ntfy_password="CHANGEME"
 
 ntfy_title="$sonarr_series_title"
 ntfy_message=" "
-if [ "$sonarr_eventtype" == "Download" ]; then
+if [ "$sonarr_eventtype" == "Test" ]; then
+  exit 0
+elif [ "$sonarr_eventtype" == "Download" ]; then
   ntfy_tag=tv
   ntfy_title+=" - S"
   ntfy_title+="$sonarr_episodefile_seasonnumber"

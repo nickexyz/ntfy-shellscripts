@@ -6,7 +6,9 @@ ntfy_password="CHANGEME"
 
 ntfy_title=$radarr_movie_title
 ntfy_message=" "
-if [ "$radarr_eventtype" == "Download" ]; then
+if [ "$radarr_eventtype" == "Test" ]; then
+  exit 0
+elif [ "$radarr_eventtype" == "Download" ]; then
   ntfy_tag=film_projector
   ntfy_message+=" ("
   ntfy_message+=$radarr_movie_year

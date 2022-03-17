@@ -6,7 +6,9 @@ ntfy_password="CHANGEME"
 
 ntfy_title=$lidarr_artist_name
 ntfy_message=" "
-if [ "$lidarr_eventtype" == "AlbumDownload" ]; then
+if [ "$lidarr_eventtype" == "Test" ]; then
+  exit 0
+elif [ "$lidarr_eventtype" == "AlbumDownload" ]; then
   ntfy_title+=" - "
   ntfy_title+=$lidarr_album_title
   ntfy_tag=musical_note

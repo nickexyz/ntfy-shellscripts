@@ -6,7 +6,9 @@ ntfy_password="CHANGEME"
 
 ntfy_title=$readarr_author_name
 ntfy_message=" "
-if [ "$readarr_eventtype" == "Download" ]; then
+if [ "$readarr_eventtype" == "Test" ]; then
+  exit 0
+elif [ "$readarr_eventtype" == "Download" ]; then
   ntfy_title+=" - "
   ntfy_title+=$readarr_book_title
   ntfy_tag=headphones
