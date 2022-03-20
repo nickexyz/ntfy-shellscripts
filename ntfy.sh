@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://example.com/topic"
-ntfy_username="CHANGEME"
-ntfy_password="CHANGEME"
+ntfy_url="https://ntfy.sh/mytopic"
+ntfy_username=""
+ntfy_password=""
+
 
 help()
 {
@@ -73,6 +74,10 @@ if [ -z "$ntfy_topic" ]; then
   ntfy_topic="$HOSTNAME"
 fi
 
-curl -s -u $ntfy_username:$ntfy_password -H "tags:"$ntfy_tag -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+if [ -z "$ntfy_password" ]; then
+  curl -s -H "tags:"$ntfy_tag -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+else
+  curl -s -u $ntfy_username:$ntfy_password -H "tags:"$ntfy_tag -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+fi
 
 exit 0
