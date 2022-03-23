@@ -20,15 +20,15 @@ elif [ "$lidarr_eventtype" == "AlbumDownload" ]; then
   ntfy_title+=" - "
   ntfy_title+=$lidarr_album_title
   ntfy_tag=musical_note
-elif [ "$lidarr_eventtype" == "HealthIssue" ]; then
-  ntfy_tag=warning
-  ntfy_message+=$lidarr_health_issue_message
   curl $ntfy_auth \
   -H tags:$ntfy_tag \
   -H "Click: https://musicbrainz.org/release-group/""$lidarr_album_mbid" \
   -H "X-Title: Lidarr: $lidarr_eventtype" -d "$ntfy_title""$ntfy_message" \
   --request POST $ntfy_url
   exit 0
+elif [ "$lidarr_eventtype" == "HealthIssue" ]; then
+  ntfy_tag=warning
+  ntfy_message+=$lidarr_health_issue_message
 else
   ntfy_tag=information_source
 fi
