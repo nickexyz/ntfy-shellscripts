@@ -75,31 +75,33 @@ check_lock() {
 check_chapters() {
 
   for tbl in "${library[@]}"; do
-    # echo "$tbl"
-    tbl_name=$( echo "$tbl" | tr / _  | sed 's/[^[:alnum:]_]//g' )
-    sqlite3 "$dbpath" "CREATE TABLE IF NOT EXISTS $tbl_name (name CHAR NOT NULL PRIMARY KEY, realname CHAR, chapters INT );"
-    IFS=$'\n'
-    for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
-      name=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
-      oldnr=$( sqlite3 "$dbpath" "SELECT chapters FROM $tbl_name WHERE name=\"$name\";" 2>/dev/null )
-      newnr=$( ls -1q "$tbl"/"$dir" | wc -l )
-      if [ -z "$oldnr" ]; then
-        oldnr="0"
-      fi
-      if [ -z "$newnr" ]; then
-        newnr="0"
-      fi
-      if [ "$newnr" -gt "$oldnr" ]; then
-        chap=$( expr $newnr - $oldnr )
-        echo "$chap $push_type $dir $push_added" >> /tmp/read_notify_added.tmp
-      elif [ "$newnr" -lt "$oldnr" ]; then
-        chap=$( expr $oldnr - $newnr )
-        echo "$chap $push_type $dir $push_deleted" >> /tmp/read_notify_deleted.tmp
-      fi
+    if [ -d "$tbl" ]; then
+      # echo "$tbl"
+      tbl_name=$( echo "$tbl" | tr / _  | sed 's/[^[:alnum:]_]//g' )
+      sqlite3 "$dbpath" "CREATE TABLE IF NOT EXISTS $tbl_name (name CHAR NOT NULL PRIMARY KEY, realname CHAR, chapters INT );"
+      IFS=$'\n'
+      for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
+        name=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
+        oldnr=$( sqlite3 "$dbpath" "SELECT chapters FROM $tbl_name WHERE name=\"$name\";" 2>/dev/null )
+        newnr=$( ls -1q "$tbl"/"$dir" | wc -l )
+        if [ -z "$oldnr" ]; then
+          oldnr="0"
+        fi
+        if [ -z "$newnr" ]; then
+          newnr="0"
+        fi
+        if [ "$newnr" -gt "$oldnr" ]; then
+          chap=$( expr $newnr - $oldnr )
+          echo "$chap $push_type $dir $push_added" >> /tmp/read_notify_added.tmp
+        elif [ "$newnr" -lt "$oldnr" ]; then
+          chap=$( expr $oldnr - $newnr )
+          echo "$chap $push_type $dir $push_deleted" >> /tmp/read_notify_deleted.tmp
+        fi
 
-      sqlite3 "$dbpath"  "INSERT OR IGNORE INTO $tbl_name (name,realname,chapters) VALUES (\"$name\",\"$dir\",\"$newnr\"); UPDATE $tbl_name SET chapters = $newnr WHERE name=\"$name\""
-    done
-    unset IFS
+        sqlite3 "$dbpath"  "INSERT OR IGNORE INTO $tbl_name (name,realname,chapters) VALUES (\"$name\",\"$dir\",\"$newnr\"); UPDATE $tbl_name SET chapters = $newnr WHERE name=\"$name\""
+      done
+      unset IFS
+    fi
   done
 }
 
@@ -138,7 +140,9 @@ cleanup() {
   # Clean up tables
   libr_path=()
   for libr in "${library[@]}"; do
-    libr_path+=("$(echo $libr | tr / _ | sed 's/[^[:alnum:]_]//g')")
+    if [ -d "$libr" ]; then
+      libr_path+=("$(echo $libr | tr / _ | sed 's/[^[:alnum:]_]//g')")
+    fi
   done
   for tbl in $(sqlite3 "$dbpath" ". tables"); do
     if [[ ! "${libr_path[*]}" =~ ${tbl} ]]; then
@@ -148,19 +152,21 @@ cleanup() {
 
   # Clean up records
   for libr in "${library[@]}"; do
-    IFS=$'\n'
-    for dir in $(find $libr -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
-      libr_name+=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
-    done
-    unset IFS
-    tbl_name=$(echo "$libr" | tr / _ | sed 's/[^[:alnum:]_]//g')
-    for name in $(sqlite3 "$dbpath" "SELECT name FROM $tbl_name"); do
-      if [[ ! "${libr_name[*]}" =~ ${name} ]]; then
-        realname=$( sqlite3 "$dbpath" "SELECT realname FROM $tbl_name WHERE name = \"$name\"" )
-        sqlite3 "$dbpath" "DELETE FROM $tbl_name WHERE name = \"$name\""
-        echo "$realname $push_deleted" >> /tmp/read_notify_deleted.tmp
-      fi
-    done
+    if [ -d "$libr" ]; then
+      IFS=$'\n'
+      for dir in $(find $libr -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
+        libr_name+=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
+      done
+      unset IFS
+      tbl_name=$(echo "$libr" | tr / _ | sed 's/[^[:alnum:]_]//g')
+      for name in $(sqlite3 "$dbpath" "SELECT name FROM $tbl_name"); do
+        if [[ ! "${libr_name[*]}" =~ ${name} ]]; then
+          realname=$( sqlite3 "$dbpath" "SELECT realname FROM $tbl_name WHERE name = \"$name\"" )
+          sqlite3 "$dbpath" "DELETE FROM $tbl_name WHERE name = \"$name\""
+          echo "$realname $push_deleted" >> /tmp/read_notify_deleted.tmp
+        fi
+      done
+    fi
   done
 }
 

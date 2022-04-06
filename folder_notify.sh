@@ -77,26 +77,28 @@ check_folders() {
 
   sqlite3 "$dbpath" "CREATE TABLE IF NOT EXISTS folders (foldername CHAR NOT NULL PRIMARY KEY, files INT );"
   for dir in "${folder_path[@]}"; do
-    foldername=$( echo $dir | tr / _  | sed 's/[^[:alnum:]_]//g' )
-    oldnr=$( sqlite3 "$dbpath" "SELECT files FROM folders WHERE foldername=\"$foldername\";" 2>/dev/null )
-    IFS=$'\n'
-    newnr=$( find $dir -mindepth 1 -maxdepth "$folder_depth" -type f -printf '%P\n' | wc -l )
-    if [ -z "$oldnr" ]; then
-      oldnr="0"
-    fi
-    if [ -z "$newnr" ]; then
-      newnr="0"
-    fi
-    if [ "$newnr" -gt "$oldnr" ]; then
-      chap=$( expr $newnr - $oldnr )
-      echo "$chap $push_type $push_added $dir" >> /tmp/folder_notify_added.tmp
-    elif [ "$newnr" -lt "$oldnr" ]; then
-      chap=$( expr $oldnr - $newnr )
-      echo "$chap $push_type $push_deleted $dir" >> /tmp/folder_notify_deleted.tmp
-    fi
-    unset IFS
+    if [ -d "$dir" ]; then
+      foldername=$( echo $dir | tr / _  | sed 's/[^[:alnum:]_]//g' )
+      oldnr=$( sqlite3 "$dbpath" "SELECT files FROM folders WHERE foldername=\"$foldername\";" 2>/dev/null )
+      IFS=$'\n'
+      newnr=$( find $dir -mindepth 1 -maxdepth "$folder_depth" -type f -printf '%P\n' | wc -l )
+      if [ -z "$oldnr" ]; then
+        oldnr="0"
+      fi
+      if [ -z "$newnr" ]; then
+        newnr="0"
+      fi
+      if [ "$newnr" -gt "$oldnr" ]; then
+        chap=$( expr $newnr - $oldnr )
+        echo "$chap $push_type $push_added $dir" >> /tmp/folder_notify_added.tmp
+      elif [ "$newnr" -lt "$oldnr" ]; then
+        chap=$( expr $oldnr - $newnr )
+        echo "$chap $push_type $push_deleted $dir" >> /tmp/folder_notify_deleted.tmp
+      fi
+      unset IFS
 
-    sqlite3 "$dbpath" "INSERT OR IGNORE INTO folders (foldername,files) VALUES (\"$foldername\",\"$newnr\"); UPDATE folders SET files = $newnr WHERE foldername=\"$foldername\""
+      sqlite3 "$dbpath" "INSERT OR IGNORE INTO folders (foldername,files) VALUES (\"$foldername\",\"$newnr\"); UPDATE folders SET files = $newnr WHERE foldername=\"$foldername\""
+    fi
   done
 }
 
@@ -133,7 +135,9 @@ check_push_deleted() {
 cleanup() {
   fo_path=()
   for folder in "${folder_path[@]}"; do
-    fo_path+=("$(echo $folder | tr / _ | sed 's/[^[:alnum:]_]//g')")
+    if [ -d "$folder" ]; then
+      fo_path+=("$(echo $folder | tr / _ | sed 's/[^[:alnum:]_]//g')")
+    fi
   done
   for name in $(sqlite3 "$dbpath" "SELECT foldername FROM folders"); do
     if [[ ! "${fo_path[*]}" =~ ${name} ]]; then
