@@ -5,7 +5,7 @@
 # the results in a sqlite database. If any new files has been added
 # since the last run, a push message will be sent.
 
-# I made it to send notifications when new volumes of comics/manga
+# I made it to send notifications when new chapters of comics/manga
 # have been added, but it can be used for anything I guess.
 
 # Be careful with special characters. Should work pretty good,
@@ -23,6 +23,21 @@ config_path="/opt/read_notify"
 # Library folder paths, you can add as many as you want.
 ######################################################################
 library=( "/path/one" "/path/two" "/path/three" )
+
+######################################################################
+# Do you want to be notified if there is a gap in the numbering?
+# Usually indicates a missing chapter/volume.
+#
+# When a file is added or deleted, it also checks for gaps.
+# 1 = On, 0 = Off
+#
+# To run a search for the whole library:
+# ./read_notify search_missing
+#
+# Keep in mind that your file names may not work with this.
+# Seems to work great with Tachiyomi so far.
+######################################################################
+find_missing="1"
 
 ######################################################################
 # Notifications
@@ -45,7 +60,7 @@ pushover_user_token=""
 # What should the notifications look like?
 # For example: "2 chapter(s) of foldername added" will be sent.
 ######################################################################
-push_type="volume(s) of"
+push_type="chapters(s) of"
 push_added="added"
 push_deleted="deleted"
 
@@ -93,9 +108,15 @@ check_chapters() {
         if [ "$newnr" -gt "$oldnr" ]; then
           chap=$( expr $newnr - $oldnr )
           echo "$chap $push_type $dir $push_added" >> /tmp/read_notify_added.tmp
+          if [[ "$find_missing" == "1" ]]; then
+            find_gaps
+          fi
         elif [ "$newnr" -lt "$oldnr" ]; then
           chap=$( expr $oldnr - $newnr )
           echo "$chap $push_type $dir $push_deleted" >> /tmp/read_notify_deleted.tmp
+          if [[ "$find_missing" == "1" ]]; then
+            find_gaps
+          fi
         fi
 
         sqlite3 "$dbpath"  "INSERT OR IGNORE INTO $tbl_name (name,realname,chapters) VALUES (\"$name\",\"$dir\",\"$newnr\"); UPDATE $tbl_name SET chapters = $newnr WHERE name=\"$name\""
@@ -170,9 +191,55 @@ cleanup() {
   done
 }
 
-sqlite3 "$dbpath" "VACUUM;"
+find_gaps() {
+  ls -1 "$tbl"/"$dir" > /tmp/read_notify_missing.work.tmp
+  # Remove .tmp
+  sed -i '/\.tmp/d' /tmp/read_notify_missing.work.tmp
+  # Remove extension
+  sed -i 's/\.[^.]*$//' /tmp/read_notify_missing.work.tmp
+  # Remove everything but numbers and dots
+  sed -i 's/[^0-9.]//g' /tmp/read_notify_missing.work.tmp
+  # Remove leading dot
+  sed -i 's/^\.//' /tmp/read_notify_missing.work.tmp
+  # Sort
+  cat /tmp/read_notify_missing.work.tmp | sort -h > /tmp/read_notify_missing.work.tmp.1
+  mv /tmp/read_notify_missing.work.tmp.1 /tmp/read_notify_missing.work.tmp
+  seq $(head -n1 /tmp/read_notify_missing.work.tmp) $(tail -n1 /tmp/read_notify_missing.work.tmp) | grep -vwFf /tmp/read_notify_missing.work.tmp - >> /tmp/read_notify_missing.tmp
+  rm -f /tmp/read_notify_missing.work.tmp
+  if [ -s "/tmp/read_notify_missing.tmp" ]; then
+    if [ -f "/tmp/read_notify_added.tmp" ]; then
+      echo "These $push_type are missing from $dir" >> /tmp/read_notify_added.tmp
+      cat /tmp/read_notify_missing.tmp >> /tmp/read_notify_added.tmp
+    else
+      echo "These $push_type are missing from $dir" >> /tmp/read_notify_deleted.tmp
+      cat /tmp/read_notify_missing.tmp >> /tmp/read_notify_deleted.tmp
+    fi
+    rm -f /tmp/read_notify_missing.tmp
+  fi
+}
+
 
 check_lock
+
+if [[ "$1" == "search_missing" ]]; then
+  for tbl in "${library[@]}"; do
+    if [ -d "$tbl" ]; then
+      IFS=$'\n'
+      for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
+        find_gaps
+      done
+      unset IFS
+    fi
+  done
+  check_push_deleted
+  rm -f /tmp/read_notify_added.tmp 2>/dev/null
+  rm -f /tmp/read_notify_deleted.tmp 2>/dev/null
+  rm -f /tmp/read_notify.lock
+  exit 0
+fi
+
+sqlite3 "$dbpath" "VACUUM;"
+
 check_chapters
 cleanup
 check_push_added
