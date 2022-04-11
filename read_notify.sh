@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script looks in the directories that you specify with "library"
-# After that, it counts the files in all subdirectories, and insert
+# After that, it counts the .cbz files in all subdirectories, and inserts
 # the results in a sqlite database. If any new files has been added
 # since the last run, a push message will be sent.
 
@@ -98,7 +98,7 @@ check_chapters() {
       for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
         name=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
         oldnr=$( sqlite3 "$dbpath" "SELECT chapters FROM $tbl_name WHERE name=\"$name\";" 2>/dev/null )
-        newnr=$( ls -1q "$tbl"/"$dir" | wc -l )
+        newnr=$( ls -1q "$tbl"/"$dir"/*.cbz | wc -l )
         if [ -z "$oldnr" ]; then
           oldnr="0"
         fi
