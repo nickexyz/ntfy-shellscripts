@@ -34,10 +34,23 @@ library=( "/path/one" "/path/two" "/path/three" )
 # To run a search for the whole library:
 # ./read_notify search_missing
 #
-# Keep in mind that your file names may not work with this.
-# Seems to work great with Tachiyomi so far.
+# If a series is named like this:
+# Chapter 1.cbz
+# Chapter 2.cbz
+# Chapter 3.1.cbz
+# Chapter 3.2.cbz
+# The script will think that Chapter 3 is missing.
+# Simply create a ignore file, to manually ignore the "gap".
+# Chapter 1.cbz
+# Chapter 2.cbz
+# Chapter 3.ignore
+# Chapter 3.1.cbz
+# Chapter 3.2.cbz
+#
+# If you want to ignore the whole directory, create an .ignore_gaps file:
+# /path/to/manga/.ignore_gaps
 ######################################################################
-find_missing="1"
+find_missing="0"
 
 ######################################################################
 # Notifications
@@ -94,8 +107,7 @@ check_chapters() {
       # echo "$tbl"
       tbl_name=$( echo "$tbl" | tr / _  | sed 's/[^[:alnum:]_]//g' )
       sqlite3 "$dbpath" "CREATE TABLE IF NOT EXISTS $tbl_name (name CHAR NOT NULL PRIMARY KEY, realname CHAR, chapters INT );"
-      IFS=$'\n'
-      for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
+      find "$tbl" -mindepth 1 -maxdepth 1 -type d -printf '%P\n' |while read dir; do
         name=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
         oldnr=$( sqlite3 "$dbpath" "SELECT chapters FROM $tbl_name WHERE name=\"$name\";" 2>/dev/null )
         newnr=$( ls -1q "$tbl"/"$dir"/*.cbz | wc -l )
@@ -121,7 +133,6 @@ check_chapters() {
 
         sqlite3 "$dbpath"  "INSERT OR IGNORE INTO $tbl_name (name,realname,chapters) VALUES (\"$name\",\"$dir\",\"$newnr\"); UPDATE $tbl_name SET chapters = $newnr WHERE name=\"$name\""
       done
-      unset IFS
     fi
   done
 }
@@ -174,14 +185,13 @@ cleanup() {
   # Clean up records
   for libr in "${library[@]}"; do
     if [ -d "$libr" ]; then
-      IFS=$'\n'
-      for dir in $(find $libr -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
-        libr_name+=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
+      readarray -d '\n' libr_name < <(find "$libr" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
+      for arr_line in "${libr_name[@]}"; do
+        libr_name_clean+=$( echo "$arr_line" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
       done
-      unset IFS
       tbl_name=$(echo "$libr" | tr / _ | sed 's/[^[:alnum:]_]//g')
       for name in $(sqlite3 "$dbpath" "SELECT name FROM $tbl_name"); do
-        if [[ ! "${libr_name[*]}" =~ ${name} ]]; then
+        if [[ ! "${libr_name_clean[*]}" =~ ${name} ]]; then
           realname=$( sqlite3 "$dbpath" "SELECT realname FROM $tbl_name WHERE name = \"$name\"" )
           sqlite3 "$dbpath" "DELETE FROM $tbl_name WHERE name = \"$name\""
           echo "$realname $push_deleted" >> /tmp/read_notify_deleted.tmp
@@ -192,19 +202,19 @@ cleanup() {
 }
 
 find_gaps() {
-  ls -1 "$tbl"/"$dir" > /tmp/read_notify_missing.work.tmp
-  # Remove .tmp
-  sed -i '/\.tmp/d' /tmp/read_notify_missing.work.tmp
-  # Remove extension
-  sed -i 's/\.[^.]*$//' /tmp/read_notify_missing.work.tmp
-  # Remove everything but numbers and dots
-  sed -i 's/[^0-9.]//g' /tmp/read_notify_missing.work.tmp
-  # Remove leading dot
-  sed -i 's/^\.//' /tmp/read_notify_missing.work.tmp
-  # Sort
-  cat /tmp/read_notify_missing.work.tmp | sort -h > /tmp/read_notify_missing.work.tmp.1
+  ls -1 "$tbl"/"$dir"/{*.cbz,*.ignore} > /tmp/read_notify_missing.first.tmp 2>/dev/null
+  oIFS=$IFS
+  while IFS="" read -r wholeline || [ -n "$p" ]
+  do
+    # Echo line, split numbers and chars on different lines, remove everything except numbers, get the last one, remove leading 0s.
+    printf '%s\n' "$wholeline" | grep -Eo '[[:alpha:]]+|[0-9]+' | grep -x '[0-9][0-9]*' | tail -n 1 | sed -e 's:^0*::' >> /tmp/read_notify_missing.work.tmp
+  done < /tmp/read_notify_missing.first.tmp
+  IFS=$oIFS
+  # Remove duplicates and sort
+  cat /tmp/read_notify_missing.work.tmp | awk '!seen[$0]++' | sort -V > /tmp/read_notify_missing.work.tmp.1
   mv /tmp/read_notify_missing.work.tmp.1 /tmp/read_notify_missing.work.tmp
   seq $(head -n1 /tmp/read_notify_missing.work.tmp) $(tail -n1 /tmp/read_notify_missing.work.tmp) | grep -vwFf /tmp/read_notify_missing.work.tmp - >> /tmp/read_notify_missing.tmp
+  rm -f /tmp/read_notify_missing.first.tmp
   rm -f /tmp/read_notify_missing.work.tmp
   if [ -s "/tmp/read_notify_missing.tmp" ]; then
     if [ -f "/tmp/read_notify_added.tmp" ]; then
@@ -224,11 +234,11 @@ check_lock
 if [[ "$1" == "search_missing" ]]; then
   for tbl in "${library[@]}"; do
     if [ -d "$tbl" ]; then
-      IFS=$'\n'
-      for dir in $(find $tbl -mindepth 1 -maxdepth 1 -type d -printf '%P\n' ); do
-        find_gaps
+      find "$tbl" -mindepth 1 -maxdepth 1 -type d -printf '%P\n' |while read dir; do
+        if [ ! -f "$tbl/$dir/.ignore_gaps" ] ; then
+          find_gaps
+        fi
       done
-      unset IFS
     fi
   done
   check_push_deleted
@@ -250,3 +260,4 @@ rm -f /tmp/read_notify_deleted.tmp 2>/dev/null
 rm -f /tmp/read_notify.lock
 
 exit 0
+
