@@ -214,6 +214,10 @@ find_gaps() {
   cat /tmp/read_notify_missing.work.tmp | awk '!seen[$0]++' | sort -V > /tmp/read_notify_missing.work.tmp.1
   mv /tmp/read_notify_missing.work.tmp.1 /tmp/read_notify_missing.work.tmp
   seq $(head -n1 /tmp/read_notify_missing.work.tmp) $(tail -n1 /tmp/read_notify_missing.work.tmp) | grep -vwFf /tmp/read_notify_missing.work.tmp - >> /tmp/read_notify_missing.tmp
+  # Chapter 1 should exist, so check for that specifically.
+  if ! grep -qcE '^1([^0-9]|$)' /tmp/read_notify_missing.work.tmp ; then
+    echo "1" >> /tmp/read_notify_missing.tmp
+  fi
   rm -f /tmp/read_notify_missing.first.tmp
   rm -f /tmp/read_notify_missing.work.tmp
   if [ -s "/tmp/read_notify_missing.tmp" ]; then
