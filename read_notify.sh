@@ -206,20 +206,60 @@ find_gaps() {
   oIFS=$IFS
   while IFS="" read -r wholeline || [ -n "$p" ]
   do
-    # Echo line, split numbers and chars on different lines, remove everything except numbers, get the last one, remove leading 0s.
-    printf '%s\n' "$wholeline" | grep -Eo '[[:alpha:]]+|[0-9]+' | grep -x '[0-9][0-9]*' | tail -n 1 | sed -e 's:^0*::' >> /tmp/read_notify_missing.work.tmp
+    rm -f /tmp/read_notify_missing.work.tmp 2>/dev/null
+    only_name=${wholeline##*/}
+    # Echo line, split numbers and chars on different lines, remove everything except numbers, remove leading 0s.
+    printf '%s\n' "$only_name" | grep -Eo '[[:alpha:]]+|[0-9]+' | grep -x '[0-9][0-9]*' | sed -e 's:^0*::' | sed '/^\s*$/d' >> /tmp/read_notify_missing.work.tmp
+    number_last=$( cat /tmp/read_notify_missing.work.tmp | tail -n 1 )
+    number_lines=$( cat /tmp/read_notify_missing.work.tmp | wc -l )
+    # See if we can find the string Chapter, and grab the number from there.
+    if echo "$only_name" | grep -q "[Cc][Hh][Aa][Pp][Tt][Ee][Rr]"; then
+      # Check if Chapter is in the name more than once. The right one is probably the first in that case.
+      if echo "$only_name" | grep -q '\('"Chapter"'\).*\1' ; then
+        only_name_minus_chapter=$( echo "$only_name" | sed -E 's/(.*)Chapter/\1NOPE/' )
+        new_chapnr=$( echo "$only_name_minus_chapter" | sed -nr '/[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\._ ][0-9]+/ s/.*[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\._ ]+([0-9]+).*/\1/p' )
+        # If empty, use the old nr.
+        if [ -z "$new_chapnr" ]; then
+          echo "$number_last" >> /tmp/read_notify_missing.second.tmp
+        else
+          echo "$new_chapnr" >> /tmp/read_notify_missing.second.tmp
+        fi
+      else
+        new_chapnr=$( echo "$only_name" | sed -nr '/[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\._ ][0-9]+/ s/.*[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\._ ]+([0-9]+).*/\1/p' )
+        if [ -z "$new_chapnr" ]; then
+          echo "$number_last" >> /tmp/read_notify_missing.second.tmp
+        else
+          echo "$new_chapnr" >> /tmp/read_notify_missing.second.tmp
+        fi
+      fi
+    else
+      # Check if there are more than two numbers, which indicates that there are numbers in the chapter name.
+      if [ "$number_lines" -gt "2" ]; then
+        new_chapnr=$( echo "$only_name" | sed -nr '/[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\. ][0-9]+/ s/.*[Cc][Hh][Aa][Pp][Tt][Ee][Rr][\. ]+([0-9]+).*/\1/p' )
+        # If empty, use the old nr.
+        if [ -z "$new_chapnr" ]; then
+          echo "$number_last" >> /tmp/read_notify_missing.second.tmp
+        else
+          echo "$new_chapnr" >> /tmp/read_notify_missing.second.tmp
+        fi
+      else
+        echo "$number_last" >> /tmp/read_notify_missing.second.tmp
+      fi
+    fi
   done < /tmp/read_notify_missing.first.tmp
   IFS=$oIFS
   # Remove duplicates and sort
-  cat /tmp/read_notify_missing.work.tmp | awk '!seen[$0]++' | sort -V > /tmp/read_notify_missing.work.tmp.1
-  mv /tmp/read_notify_missing.work.tmp.1 /tmp/read_notify_missing.work.tmp
-  seq $(head -n1 /tmp/read_notify_missing.work.tmp) $(tail -n1 /tmp/read_notify_missing.work.tmp) | grep -vwFf /tmp/read_notify_missing.work.tmp - >> /tmp/read_notify_missing.tmp
-  # Chapter 1 should exist, so check for that specifically.
-  if ! grep -qcE '^1([^0-9]|$)' /tmp/read_notify_missing.work.tmp ; then
-    echo "1" >> /tmp/read_notify_missing.tmp
+  if [ -f "/tmp/read_notify_missing.second.tmp" ]; then
+    cat /tmp/read_notify_missing.second.tmp | awk '!seen[$0]++' | sort -V > /tmp/read_notify_missing.second.tmp.1
+    mv /tmp/read_notify_missing.second.tmp.1 /tmp/read_notify_missing.second.tmp
+    seq $(head -n1 /tmp/read_notify_missing.second.tmp) $(tail -n1 /tmp/read_notify_missing.second.tmp) | grep -vwFf /tmp/read_notify_missing.second.tmp - >> /tmp/read_notify_missing.tmp
+    # Chapter 1 should exist, so check for that specifically.
+    if ! grep -qcE '^1([^0-9]|$)' /tmp/read_notify_missing.second.tmp ; then
+      echo "1" >> /tmp/read_notify_missing.tmp
+    fi
   fi
   rm -f /tmp/read_notify_missing.first.tmp
-  rm -f /tmp/read_notify_missing.work.tmp
+  rm -f /tmp/read_notify_missing.second.tmp
   if [ -s "/tmp/read_notify_missing.tmp" ]; then
     if [ -f "/tmp/read_notify_added.tmp" ]; then
       echo "These $push_type are missing from $dir" >> /tmp/read_notify_added.tmp
@@ -264,4 +304,3 @@ rm -f /tmp/read_notify_deleted.tmp 2>/dev/null
 rm -f /tmp/read_notify.lock
 
 exit 0
-
