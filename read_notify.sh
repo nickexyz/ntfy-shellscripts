@@ -207,8 +207,7 @@ cleanup() {
 find_gaps() {
   ls -1 "$tbl"/"$dir"/{*.cbz,*.ignore} > /tmp/read_notify_missing.first.tmp 2>/dev/null
   oIFS=$IFS
-  while IFS="" read -r wholeline || [ -n "$p" ]
-  do
+  while IFS="" read -r wholeline || [ -n "$p" ] ; do
     rm -f /tmp/read_notify_missing.work.tmp 2>/dev/null
     only_name=${wholeline##*/}
     # Echo line, split numbers and chars on different lines, remove everything except numbers, remove leading 0s.
@@ -282,6 +281,8 @@ if [[ "$1" == "search_missing" ]]; then
   for tbl in "${library[@]}"; do
     if [ -d "$tbl" ]; then
       for di in "$tbl"/*/ ; do
+        # Remove path and trailing slash
+        dir=$( echo "$di" | sed "s|$tbl/||g" | sed 's:/*$::' )
         if [ ! -f "$dir".ignore_gaps ] ; then
           find_gaps
         fi
@@ -307,3 +308,4 @@ rm -f /tmp/read_notify_deleted.tmp 2>/dev/null
 rm -f /tmp/read_notify.lock
 
 exit 0
+
