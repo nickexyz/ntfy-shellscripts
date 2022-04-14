@@ -107,7 +107,10 @@ check_chapters() {
       # echo "$tbl"
       tbl_name=$( echo "$tbl" | tr / _  | sed 's/[^[:alnum:]_]//g' )
       sqlite3 "$dbpath" "CREATE TABLE IF NOT EXISTS $tbl_name (name CHAR NOT NULL PRIMARY KEY, realname CHAR, chapters INT );"
-      find "$tbl" -mindepth 1 -maxdepth 1 -type d -printf '%P\n' |while read dir; do
+      for di in "$tbl"/*/ ; do
+        # Remove path and trailing slash
+        dir=$( echo "$di" | sed "s|$tbl/||g" | sed 's:/*$::' )
+
         name=$( echo "$dir" | tr -s '[:blank:]' '_' | sed 's/[^[:alnum:]_]//g' )
         oldnr=$( sqlite3 "$dbpath" "SELECT chapters FROM $tbl_name WHERE name=\"$name\";" 2>/dev/null )
         newnr=$( ls -1q "$tbl"/"$dir"/*.cbz | wc -l )
@@ -278,8 +281,8 @@ check_lock
 if [[ "$1" == "search_missing" ]]; then
   for tbl in "${library[@]}"; do
     if [ -d "$tbl" ]; then
-      find "$tbl" -mindepth 1 -maxdepth 1 -type d -printf '%P\n' |while read dir; do
-        if [ ! -f "$tbl/$dir/.ignore_gaps" ] ; then
+      for di in "$tbl"/*/ ; do
+        if [ ! -f "$dir".ignore_gaps ] ; then
           find_gaps
         fi
       done
