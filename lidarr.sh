@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
+ntfy_url="https://ntfy.sh"
+ntfy_topic="mytopic"
 ntfy_username=""
 ntfy_password=""
 
@@ -20,12 +21,6 @@ elif [ "$lidarr_eventtype" == "AlbumDownload" ]; then
   ntfy_title+=" - "
   ntfy_title+=$lidarr_album_title
   ntfy_tag=musical_note
-  curl $ntfy_auth \
-  -H tags:$ntfy_tag \
-  -H "Click: https://musicbrainz.org/release-group/""$lidarr_album_mbid" \
-  -H "X-Title: Lidarr: $lidarr_eventtype" -d "$ntfy_title""$ntfy_message" \
-  --request POST $ntfy_url
-  exit 0
 elif [ "$lidarr_eventtype" == "HealthIssue" ]; then
   ntfy_tag=warning
   ntfy_message+=$lidarr_health_issue_message
@@ -33,9 +28,42 @@ else
   ntfy_tag=information_source
 fi
 
-curl $ntfy_auth \
--H tags:$ntfy_tag \
--H "X-Title: Lidarr: $lidarr_eventtype" -d "$ntfy_title""$ntfy_message" \
---request POST $ntfy_url
+if [ "$lidarr_eventtype" == "AlbumDownload" ]; then
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Lidarr: $lidarr_eventtype",
+  "message": "$ntfy_title$ntfy_message",
+  "actions": [
+    {
+      "action": "view",
+      "label": "MusicBrainz",
+      "url": "https://musicbrainz.org/release-group/$lidarr_album_mbid",
+      "clear": true
+    }
+  ]
+}
+EOF
+}
+else
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Lidarr: $lidarr_eventtype",
+  "message": "$ntfy_title$ntfy_message"
+}
+EOF
+}
+fi
+
+curl -H "Accept: application/json" \
+     -H "Content-Type:application/json" \
+     $ntfy_auth -X POST --data "$(ntfy_post_data)" $ntfy_url
 
 exit 0

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
+ntfy_url="https://ntfy.sh"
+ntfy_topic="mytopic"
 ntfy_username=""
 ntfy_password=""
 
@@ -24,13 +25,6 @@ elif [ "$radarr_eventtype" == "Download" ]; then
   ntfy_message+=" ["
   ntfy_message+=$radarr_moviefile_quality
   ntfy_message+="]"
-  curl $ntfy_auth \
-  -H "tags:"$ntfy_tag \
-  -H "X-Title: Radarr: $radarr_eventtype" \
-  -H "Click: https://www.imdb.com/title/""$radarr_movie_imdbid" \
-  -d "$ntfy_title""$ntfy_message" \
-  --request POST $ntfy_url
-  exit 0
 elif [ "$radarr_eventtype" == "HealthIssue" ]; then
   ntfy_tag=warning
   ntfy_message+=$radarr_health_issue_message
@@ -38,10 +32,42 @@ else
   ntfy_tag=information_source
 fi
 
-curl $ntfy_auth \
--H "tags:"$ntfy_tag \
--H "X-Title: Radarr: $radarr_eventtype" \
--d "$ntfy_title""$ntfy_message" \
---request POST $ntfy_url
+if [ "$radarr_eventtype" == "Download" ]; then
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Radarr: $radarr_eventtype",
+  "message": "$ntfy_title$ntfy_message",
+  "actions": [
+    {
+      "action": "view",
+      "label": "IMDB",
+      "url": "https://www.imdb.com/title/$radarr_movie_imdbid",
+      "clear": true
+    }
+  ]
+}
+EOF
+}
+else
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Radarr: $radarr_eventtype",
+  "message": "$ntfy_title$ntfy_message"
+}
+EOF
+}
+fi
+
+curl -H "Accept: application/json" \
+     -H "Content-Type:application/json" \
+     $ntfy_auth -X POST --data "$(ntfy_post_data)" $ntfy_url
 
 exit 0

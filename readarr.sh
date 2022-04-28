@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
+ntfy_url="https://ntfy.sh"
+ntfy_topic="mytopic"
 ntfy_username=""
 ntfy_password=""
 
@@ -20,13 +21,6 @@ elif [ "$readarr_eventtype" == "Download" ]; then
   ntfy_title+=" - "
   ntfy_title+=$readarr_book_title
   ntfy_tag=headphones
-  curl $ntfy_auth \
-  -H tags:$ntfy_tag \
-  -H "Click: https://www.goodreads.com/book/show/""$readarr_book_grid" \
-  -H "X-Title: Readarr: $readarr_eventtype" \
-  -d "$ntfy_title""$ntfy_message" \
-  --request POST $ntfy_url
-  exit 0
 elif [ "$readarr_eventtype" == "HealthIssue" ]; then
   ntfy_tag=warning
   ntfy_message+=$readarr_health_issue_message
@@ -34,10 +28,42 @@ elif [ "$readarr_eventtype" == "Test" ]; then
   ntfy_tag=information_source
 fi
 
-curl $ntfy_auth \
--H tags:$ntfy_tag \
--H "X-Title: Readarr: $readarr_eventtype" \
--d "$ntfy_title""$ntfy_message" \
---request POST $ntfy_url
+if [ "$readarr_eventtype" == "Download" ]; then
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Readarr: $readarr_eventtype",
+  "message": "$ntfy_title$ntfy_message",
+  "actions": [
+    {
+      "action": "view",
+      "label": "Goodreads",
+      "url": "https://www.goodreads.com/book/show/$readarr_book_grid",
+      "clear": true
+    }
+  ]
+}
+EOF
+}
+else
+ntfy_post_data()
+{
+  cat <<EOF
+{
+  "topic": "$ntfy_topic",
+  "tags": ["$ntfy_tag"],
+  "title": "Readarr: $readarr_eventtype",
+  "message": "$ntfy_title$ntfy_message"
+}
+EOF
+}
+fi
+
+curl -H "Accept: application/json" \
+     -H "Content-Type:application/json" \
+     $ntfy_auth -X POST --data "$(ntfy_post_data)" $ntfy_url
 
 exit 0
