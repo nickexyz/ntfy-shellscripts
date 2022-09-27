@@ -17,7 +17,8 @@
 ntfy_username="CHANGEME"
 ntfy_password="CHANGEME"
 ntfy_url="https://ntfy.sh/mytopic"
-
+# Added in v1.28.0. Leave empty if you do not want an icon.
+ntfy_icon="https://raw.githubusercontent.com/opnsense/docs/master/source/_static/favicon.png"
 
 if [ -z "$ntfy_password" ]; then
   ntfy_auth=""
@@ -25,4 +26,4 @@ else
   ntfy_auth="-u $ntfy_username:$ntfy_password"
 fi
 
-curl $ntfy_auth -H "tags:warning" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST $ntfy_url
+curl $ntfy_auth -H "tags:warning" -H "X-Icon: $ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST $ntfy_url

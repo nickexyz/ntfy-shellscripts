@@ -4,7 +4,8 @@ ntfy_url="https://ntfy.sh"
 ntfy_topic="mytopic"
 ntfy_username=""
 ntfy_password=""
-
+# Added in v1.28.0. Leave empty if you do not want an icon.
+ntfy_icon="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/48.png"
 
 if [ -z "$ntfy_password" ]; then
   ntfy_auth=""
@@ -42,6 +43,7 @@ ntfy_post_data()
 {
   "topic": "$ntfy_topic",
   "tags": ["$ntfy_tag"],
+  "icon": "$ntfy_icon",
   "title": "Sonarr: $sonarr_eventtype",
   "message": "$ntfy_title$ntfy_message",
   "actions": [
@@ -62,6 +64,7 @@ ntfy_post_data()
 {
   "topic": "$ntfy_topic",
   "tags": ["$ntfy_tag"],
+  "icon": "$ntfy_icon",
   "title": "Sonarr: $sonarr_eventtype",
   "message": "$ntfy_title$ntfy_message"
 }

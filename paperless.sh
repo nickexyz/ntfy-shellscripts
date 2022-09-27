@@ -15,7 +15,9 @@ PAPERLESS_URL="https://paperless.example.com"
 NTFY_URL="https://ntfy.sh/mytopic"
 NTFY_USER="changeme"
 NTFY_PASSWORD="changeme"
+# Added in v1.28.0. Leave empty if you do not want an icon.
+ntfy_icon="https://raw.githubusercontent.com/paperless-ngx/paperless-ngx/4df065d8d524870ec18e8fbf2fc488449939a044/src-ui/src/apple-touch-icon.png"
 
 curl -s -u $NTFY_USER:$NTFY_PASSWORD -H tags:page_facing_up -H "X-Title: Paperless" \
 -H "Actions: view, Open, $PAPERLESS_URL/documents/$DOCUMENT_ID, clear=true; view, Download, $PAPERLESS_URL/api/documents/$DOCUMENT_ID/download/, clear=false;" \
--d "Document ID ${DOCUMENT_ID} was imported. Name: ${DOCUMENT_FILE_NAME} Correspondent: ${DOCUMENT_CORRESPONDENT} Tags: ${DOCUMENT_TAGS}" "$NTFY_URL" > /dev/null
+-d "Document ID ${DOCUMENT_ID} was imported. Name: ${DOCUMENT_FILE_NAME} Correspondent: ${DOCUMENT_CORRESPONDENT} Tags: ${DOCUMENT_TAGS}" -H "X-Icon: $ntfy_icon" "$NTFY_URL" > /dev/null

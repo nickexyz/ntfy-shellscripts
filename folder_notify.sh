@@ -36,6 +36,8 @@ ntfy_added_tag="heavy_plus_sign"
 ntfy_deleted_tag="heavy_minus_sign"
 ntfy_username=""
 ntfy_password=""
+# Added in v1.28.0. Leave empty if you do not want an icon.
+ntfy_icon=""
 
 # Pushover
 pushover_app_token=""
@@ -110,7 +112,7 @@ check_push() {
       else
         ntfy_auth="-u $ntfy_username:$ntfy_password"
       fi
-      curl -s $ntfy_auth -H tags:"$ntfy_tag" -H "X-Title: $ntfy_title" -d "$push_message" $ntfy_url > /dev/null
+      curl -s $ntfy_auth -H tags:"$ntfy_tag" -H "X-Icon: $ntfy_icon" -H "X-Title: $ntfy_title" -d "$push_message" $ntfy_url > /dev/null
     fi
     if [ -n "$pushover_app_token" ]; then
       curl -s -F "token=$pushover_app_token" -F "user=$pushover_user_token" -F "message=$push_message" https://api.pushover.net/1/messages
