@@ -12,6 +12,7 @@ help()
    echo "-m     Your message."
    echo "-p     Notification priority, 1-5, 5 is the highest.  (Optional)"
    echo "-e     Choose emoji. (https://ntfy.sh/docs/emojis/?h=emo)"
+   echo "-i     Icon URL"
    echo "-h     Print this help."
    echo
    echo "If you want to show if the last command was successful or not, you can do something like this:"
@@ -26,6 +27,7 @@ while getopts "t:m:p:e:h" option; do
     m) ntfy_message=${OPTARG};;
     p) ntfy_prio=${OPTARG};;
     e) ntfy_emoji=${OPTARG};;
+    i) ntfy_icon=${OPTARG};;
     h) help
        exit;;
     \?)
@@ -75,9 +77,9 @@ if [ -z "$ntfy_topic" ]; then
 fi
 
 if [ -z "$ntfy_password" ]; then
-  curl -s -H "tags:"$ntfy_tag -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+  curl -s -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
 else
-  curl -s -u $ntfy_username:$ntfy_password -H "tags:"$ntfy_tag -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+  curl -s -u $ntfy_username:$ntfy_password -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
 fi
 
 exit 0
