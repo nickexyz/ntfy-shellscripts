@@ -161,6 +161,8 @@ check_push() {
 
 check_push_added() {
   push_file="/tmp/read_notify_added.tmp"
+  # Replace _ with space.
+  sed -i 's/_/ /g' /tmp/read_notify_added.tmp
   push_message=$( cat /tmp/read_notify_added.tmp 2>/dev/null )
   ntfy_tag="$ntfy_added_tag"
   check_push
@@ -168,6 +170,8 @@ check_push_added() {
 
 check_push_deleted() {
   push_file="/tmp/read_notify_deleted.tmp"
+  # Replace _ with space.
+  sed -i 's/_/ /g' /tmp/read_notify_added.tmp
   push_message=$( cat /tmp/read_notify_deleted.tmp 2>/dev/null )
   ntfy_tag="$ntfy_deleted_tag"
   check_push
