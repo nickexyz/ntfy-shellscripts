@@ -21,7 +21,7 @@ help()
 }
 
 
-while getopts "t:m:p:e:h" option; do
+while getopts "t:m:p:e:i:h" option; do
   case $option in
     t) ntfy_topic=${OPTARG};;
     m) ntfy_message=${OPTARG};;
