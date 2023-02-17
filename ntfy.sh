@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 ntfy_url="https://ntfy.sh/mytopic"
+# Use ntfy_username and ntfy_password OR ntfy_token
 ntfy_username=""
 ntfy_password=""
-
+ntfy_token=""
 
 help()
 {
@@ -76,10 +77,16 @@ if [ -z "$ntfy_topic" ]; then
   ntfy_topic="$HOSTNAME"
 fi
 
-if [ -z "$ntfy_password" ]; then
-  curl -s -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+if [[ -n $ntfy_password && -n $ntfy_token ]]; then
+  echo "Use ntfy_username and ntfy_password OR ntfy_token"
+  exit 1
+elif [ -n "$ntfy_password" ]; then
+  ntfy_base64=$( echo -n "$ntfy_username:$ntfy_password" | base64 )
+  ntfy_auth="Authorization: Basic $ntfy_base64"
+elif [ -n "$ntfy_token" ]; then
+  ntfy_auth="Authorization: Bearer $ntfy_token"
 else
-  curl -s -u $ntfy_username:$ntfy_password -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+  ntfy_auth=""
 fi
 
-exit 0
+curl -s -H "$ntfy_auth" -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null

@@ -13,11 +13,25 @@ DOCUMENT_CORRESPONDENT=${7}
 DOCUMENT_TAGS=${8}
 PAPERLESS_URL="https://paperless.example.com"
 NTFY_URL="https://ntfy.sh/mytopic"
+# Use NTFY_USER and NTFY_PASSWORD OR NTFY_TOKEN
 NTFY_USER="changeme"
 NTFY_PASSWORD="changeme"
-# Added in v1.28.0. Leave empty if you do not want an icon.
+NTFY_TOKEN=""
+# Leave empty if you do not want an icon.
 ntfy_icon="https://raw.githubusercontent.com/paperless-ngx/paperless-ngx/4df065d8d524870ec18e8fbf2fc488449939a044/src-ui/src/apple-touch-icon.png"
 
-curl -s -u $NTFY_USER:$NTFY_PASSWORD -H tags:page_facing_up -H "X-Title: Paperless" \
+if [[ -n $NTFY_PASSWORD && -n $NTFY_TOKEN ]]; then
+  echo "Use NTFY_USER and NTFY_PASSWORD OR NTFY_TOKEN"
+  exit 1
+elif [ -n "$NTFY_PASSWORD" ]; then
+  NTFY_BASE64=$( echo -n "$NTFY_USER:$NTFY_PASSWORD" | base64 )
+  NTFY_AUTH="Authorization: Basic $NTFY_BASE64"
+elif [ -n "$NTFY_TOKEN" ]; then
+  NTFY_AUTH="Authorization: Bearer $NTFY_TOKEN"
+else
+  NTFY_AUTH=""
+fi
+
+curl -s -H "$NTFY_AUTH" -H tags:page_facing_up -H "X-Title: Paperless" \
 -H "Actions: view, Open, $PAPERLESS_URL/documents/$DOCUMENT_ID, clear=true; view, Download, $PAPERLESS_URL/api/documents/$DOCUMENT_ID/download/, clear=false;" \
 -d "Document ID ${DOCUMENT_ID} was imported. Name: ${DOCUMENT_FILE_NAME} Correspondent: ${DOCUMENT_CORRESPONDENT} Tags: ${DOCUMENT_TAGS}" -H "X-Icon: $ntfy_icon" "$NTFY_URL" > /dev/null

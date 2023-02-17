@@ -1,4 +1,9 @@
 You can enable ntfy notifications here in qBittorrent:
 Settings -> Downloads -> Autorun enabled
 
+If you want to use an access token, replace:
+"-u USERNAME:PASSWORD"
+with:
+-H "Authorization: Bearer YOUR_TOKEN"
+
 curl -s -u USERNAME:PASSWORD -H "tags:arrow_down" -H "X-Icon: https://raw.githubusercontent.com/qbittorrent/qBittorrent/master/src/webui/www/public/images/qbittorrent32.png" -H "X-Title: qBittorrent" -d "Torrent Downloaded - %N" "https://ntfy.sh/mytopic"

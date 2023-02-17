@@ -62,9 +62,11 @@ ntfy_url="https://ntfy.sh/mytopic"
 ntfy_title="A title"
 ntfy_added_tag="heavy_plus_sign"
 ntfy_deleted_tag="heavy_minus_sign"
+# Use ntfy_username and ntfy_password OR ntfy_token
 ntfy_username=""
 ntfy_password=""
-# Added in v1.28.0. Leave empty if you do not want an icon.
+ntfy_token=""
+# Leave empty if you do not want an icon.
 ntfy_icon=""
 
 # Pushover
@@ -146,12 +148,18 @@ check_push() {
   # Send push message
   if [ -f "$push_file" ]; then
     if [ -n "$ntfy_url" ]; then
-      if [ -z "$ntfy_password" ]; then
-        ntfy_auth=""
+      if [[ -n $ntfy_password && -n $ntfy_token ]]; then
+        echo "Use ntfy_username and ntfy_password OR ntfy_token"
+        exit 1
+      elif [ -n "$ntfy_password" ]; then
+        ntfy_base64=$( echo -n "$ntfy_username:$ntfy_password" | base64 )
+        ntfy_auth="Authorization: Basic $ntfy_base64"
+      elif [ -n "$ntfy_token" ]; then
+        ntfy_auth="Authorization: Bearer $ntfy_token"
       else
-        ntfy_auth="-u $ntfy_username:$ntfy_password"
+        ntfy_auth=""
       fi
-      curl -s $ntfy_auth -H tags:"$ntfy_tag" -H "X-Icon: $ntfy_icon" -H "X-Title: $ntfy_title" -d "$push_message" $ntfy_url > /dev/null
+      curl -H "$ntfy_auth" -H tags:"$ntfy_tag" -H "X-Icon: $ntfy_icon" -H "X-Title: $ntfy_title" -d "$push_message" $ntfy_url > /dev/null
     fi
     if [ -n "$pushover_app_token" ]; then
       curl -s -F "token=$pushover_app_token" -F "user=$pushover_user_token" -F "message=$push_message" https://api.pushover.net/1/messages
