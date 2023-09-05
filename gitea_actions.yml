@@ -1,0 +1,45 @@
+# This is a simple Gitea Actions job that sends ntfy notifications at the start, and then if the job is a success or a failure.
+# It will only run when a tag is created with -example appended. I usually have "version_number-example".
+
+# The notification will look something like this:
+# Gitea Actions
+# Repo: nickexyz/my_repo
+# Branch: refs/tags/0.1-example
+# Arch: X64
+# Build 0.1-example by niclas
+# STARTED
+# Buttons: Open run, Open repo
+
+# You will probably need to change:
+# runs-on: ci-checker
+# As long as the tools you need and curl are available, any container image should work.
+
+# You also need to add some secrets:
+# NTFY_URL: The URL to your ntfy instance, including the topic. (https://ntfy.sh/my_topic)
+# NTFY_USR: Your ntfy user
+# NTFY_PWD: Your ntfy password.
+
+name: Example job with ntfy notifications
+on:
+  push:
+    tags:
+      - '*-example'
+
+jobs:
+  deploy-example:
+    runs-on: ci-checker
+    steps:
+      - name: Job Started
+        run: |
+          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nSTARTED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:timer_clock" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"   
+      - name: Doing stuff
+        run: |
+          echo "Do something here..."   
+      - name: Job Succeeded
+        if: success()
+        run: |
+          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nSUCCEEDED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:heavy_check_mark" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"
+      - name: Job Failed
+        if: failure()
+        run: |
+          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nFAILED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:x" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"
