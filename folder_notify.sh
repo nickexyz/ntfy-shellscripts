@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-# load env file if it exists
-if [ -f $0/.env ]; then
-  set -o allexport
-  source $0/.env
-  set +o allexport
-fi
+# load env file
+DIR="$(dirname "$0")"
+set -o allexport
+source "$DIR/.env"
+set +o allexport
 
 # This script counts the files in the directories that you specify
 # with "folder_path" and insert the results in a sqlite database.
