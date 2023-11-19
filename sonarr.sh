@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh"
-ntfy_topic="mytopic"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
-sonarr_api_key=""
-#Your Sonarr URL with no trailing slash
-sonarr_url=""
-# Leave empty if you do not want an icon.
-ntfy_icon="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/48.png"
+# load env file if it exists
+if [ -f $0/.env ]; then
+  set -o allexport
+  source $0/.env
+  set +o allexport
+fi
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
@@ -30,8 +25,10 @@ if [ "$sonarr_eventtype" == "Test" ]; then
   ntfy_tag=information_source
   ntfy_title="Testing"
 elif [ "$sonarr_eventtype" == "Download" ]; then
+  # Get banner image url from Sonarr
   response=$(curl -X GET -H "Content-Type: application/json" -H "X-Api-Key: $sonarr_api_key" "$sonarr_url/api/v3/series/$sonarr_series_id")
   banner_image=$(echo "$response" | jq -r '.images[0].remoteUrl')
+  # Construct notification title and message
   ntfy_tag=tv
   ntfy_title+=" - S"
   ntfy_title+="$sonarr_episodefile_seasonnumber"
@@ -62,9 +59,9 @@ ntfy_post_data()
 {
   cat <<EOF
 {
-  "topic": "$ntfy_topic",
+  "topic": "$sonarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
-  "icon": "$ntfy_icon",
+  "icon": "$sonarr_ntfy_icon",
   "attach": "$banner_image",   
   "title": "Sonarr: $sonarr_eventtype",
   "message": "$ntfy_title$ntfy_message",
@@ -84,9 +81,9 @@ ntfy_post_data()
 {
   cat <<EOF
 {
-  "topic": "$ntfy_topic",
+  "topic": "$sonarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
-  "icon": "$ntfy_icon",
+  "icon": "$sonarr_ntfy_icon",
   "title": "Sonarr: $sonarr_eventtype",
   "message": "$ntfy_title$ntfy_message"
 }

@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# load env file if it exists
+if [ -f $0/.env ]; then
+  set -o allexport
+  source $0/.env
+  set +o allexport
+fi
+
 # This script counts the files in the directories that you specify
 # with "folder_path" and insert the results in a sqlite database.
 # If any new files has been added or deleted since the last run,
@@ -30,20 +37,14 @@ folder_depth="1"
 ######################################################################
 
 # ntfy.sh
-ntfy_url="https://ntfy.sh/mytopic"
+ntfy_url="$ntfy_url/mytopic"
 ntfy_title="A title"
 ntfy_added_tag="heavy_plus_sign"
 ntfy_deleted_tag="heavy_minus_sign"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
 # Leave empty if you do not want an icon.
 ntfy_icon=""
 
-# Pushover
-pushover_app_token=""
-pushover_user_token=""
+
 
 ######################################################################
 # What should the notifications look like?

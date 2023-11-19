@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
+# load env file if it exists
+if [ -f $0/.env ]; then
+  set -o allexport
+  source $0/.env
+  set +o allexport
+fi
 
 help()
 {
@@ -89,4 +90,4 @@ else
   ntfy_auth=""
 fi
 
-curl -s -H "$ntfy_auth" -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url" > /dev/null
+curl -s -H "$ntfy_auth" -H "tags:"$ntfy_tag -H "icon:"$ntfy_icon -H "prio:"$ntfy_prio -H "X-Title: $ntfy_topic" -d "$ntfy_message" "$ntfy_url/$ntfy_ntfy_topic" > /dev/null

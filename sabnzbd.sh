@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
-# Leave empty if you do not want an icon.
-ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd.github.io/master/images/icons/apple-touch-icon-76x76-precomposed.png"
+# load env file if it exists
+if [ -f $0/.env ]; then
+  set -o allexport
+  source $0/.env
+  set +o allexport
+fi
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
@@ -33,4 +32,4 @@ curl -H "$ntfy_auth" \
 -H "X-Title: $2" \
 -H "X-Icon: $ntfy_icon" \
 -d "$3" \
---request POST $ntfy_url
+--request POST "$ntfy_url/$sabnzbd_ntfy_topic"
