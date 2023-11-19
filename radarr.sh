@@ -6,6 +6,8 @@ ntfy_topic="mytopic"
 ntfy_username=""
 ntfy_password=""
 ntfy_token=""
+radarr_url=""
+radarr_api_key=""
 # Leave empty if you do not want an icon.
 ntfy_icon="https://raw.githubusercontent.com/Radarr/Radarr/develop/Logo/48.png"
 
@@ -50,6 +52,9 @@ else
 fi
 
 if [ "$radarr_eventtype" == "Download" ]; then
+# Get the movie poster from Radarr
+response=$(curl -X GET -H "Content-Type: application/json" -H "X-Api-Key: $radarr_api_key" "$radarr_url/api/v3/movie/$radarr_movie_id")
+banner_image=$(echo "$response" | jq -r '.images[0].remoteUrl')
 ntfy_post_data()
 {
   cat <<EOF
@@ -58,6 +63,7 @@ ntfy_post_data()
   "tags": ["$ntfy_tag"],
   "icon": "$ntfy_icon",
   "title": "Radarr: $radarr_eventtype",
+  "attach": "$banner_image",     
   "message": "$ntfy_title$ntfy_message",
   "actions": [
     {
