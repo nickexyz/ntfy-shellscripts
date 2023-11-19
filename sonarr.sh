@@ -7,6 +7,7 @@ ntfy_username=""
 ntfy_password=""
 ntfy_token=""
 sonarr_api_key=""
+#Your Sonarr URL with no trailing slash
 sonarr_url=""
 # Leave empty if you do not want an icon.
 ntfy_icon="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/48.png"
@@ -29,7 +30,7 @@ if [ "$sonarr_eventtype" == "Test" ]; then
   ntfy_tag=information_source
   ntfy_title="Testing"
 elif [ "$sonarr_eventtype" == "Download" ]; then
-  response=$(curl -X GET -H "Content-Type: application/json" -H "X-Api-Key: $sonarr_api_key" "$sonarr_url/$sonarr_series_id")
+  response=$(curl -X GET -H "Content-Type: application/json" -H "X-Api-Key: $sonarr_api_key" "$sonarr_url/api/v3/series/$sonarr_series_id")
   banner_image=$(echo "$response" | jq -r '.images[0].remoteUrl')
   ntfy_tag=tv
   ntfy_title+=" - S"
