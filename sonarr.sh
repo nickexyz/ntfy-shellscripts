@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
 # load env file
-DIR="$(dirname "$0")"
-set -o allexport
-source "$DIR/.env"
-set +o allexport
+DIR=$(dirname "$0")
+. "$DIR/.env"
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
-  exit 1
+  exit 1  
 elif [ -n "$ntfy_password" ]; then
   ntfy_base64=$( echo -n "$ntfy_username:$ntfy_password" | base64 )
   ntfy_auth="Authorization: Basic $ntfy_base64"

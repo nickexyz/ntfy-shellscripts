@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 # load env file
-DIR="$(dirname "$0")"
-set -o allexport
-source "$DIR/.env"
-set +o allexport
+DIR=$(dirname "$0")
+. "$DIR/.env"
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"

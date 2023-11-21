@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 # load env file
-DIR="$(dirname "$0")"
-set -o allexport
-source "$DIR/.env"
-set +o allexport
+DIR=$(dirname "$0")
+. "$DIR/.env"
 
 help()
 {
