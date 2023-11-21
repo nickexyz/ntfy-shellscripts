@@ -1,10 +1,8 @@
 #!/bin/sh
 
 # load env file
-DIR="$(dirname "$0")"
-set -o allexport
-source "$DIR/.env"
-set +o allexport
+DIR=$(dirname "$0")
+. "$DIR/.env"
 
 
 # This is kind of a not very good way to get ntfy notifications from Monit in OPNsense.
@@ -22,7 +20,7 @@ set +o allexport
 
 # Uncomment the one you need.
 # No auth:
-curl -H "tags:warning" -H "X-Icon: $opWnsense_ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opnsense_ntfy_topic"
+curl -H "tags:warning" -H "X-Icon: $opnsense_ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opnsense_ntfy_topic"
 # Token
 #curl -H "Authorization: Bearer $ntfy_token" -H "tags:warning" -H "X-Icon: $opensense_ntfy_icon"" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opensense_ntfy_topic"
 # User and password
