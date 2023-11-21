@@ -10,7 +10,7 @@ sonarr_ntfy_topic="sonarr" # Set your subscription topic
 sonarr_ntfy_icon="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/48.png" # Leave blank if you do not want an icon
 # Radarr
 radarr_url="" #Your Radarr URL with no trailing slash
-radar_api_key=""
+radarr_api_key=""
 radarr_ntfy_topic="radarr" # Set your subscription topic
 radarr_ntfy_icon="https://raw.githubusercontent.com/Radarr/Radarr/develop/Logo/48.png" # Leave blank if you do not want an icon
 # Readarr
