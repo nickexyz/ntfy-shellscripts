@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
 # load env file
-DIR="$(dirname "$0")"
-set -o allexport
-source "$DIR/.env"
-set +o allexport
-
+# load env file
+DIR=$(dirname "$0")
+. "$DIR/.env"
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
   exit 1
@@ -41,6 +39,6 @@ curl $ntfy_auth \
 -H "$ntfy_auth" \
 -H "tags:"$ntfy_tag \
 -H "X-Title: Prowlarr: $prowlarr_eventtype" \
--H "X-Icon: $ntfy_icon" \
+-H "X-Icon: $prowlarr_ntfy_icon" \
 -d "$ntfy_title""$ntfy_message" \
 --request POST "$ntfy_url/$prowlarr_ntfy_topic"
