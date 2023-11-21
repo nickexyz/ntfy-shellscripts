@@ -40,8 +40,7 @@ else
   ntfy_auth=""
 fi
 
-# This script is used to handle different event types in Sonarr and send notifications using the 'ntfy' tool.
-# It sets the appropriate values for the notification title, message, and tag based on the Sonarr event type.
+# Sets the appropriate values for the notification title, message, and tag based on the Sonarr event type.
 ntfy_title="$sonarr_series_title"
 ntfy_message=" "
 if [ "$sonarr_eventtype" == "Test" ]; then
@@ -108,7 +107,7 @@ response=$(curl -s -o /dev/null -w "%{http_code}" -H "Accept: application/json" 
      -H "$ntfy_auth" -X POST --data "$(ntfy_post_data)" "$ntfy_url")
 
 # If the response code is 200, the notification was sent successfully.
-# Otherwise, print an error message and exit with code 1.
+# Otherwise, print an error message and exit with code 4.
 if [[ "$response" -eq 200 ]]; then
   echo "Notification sent successfully"
 else
