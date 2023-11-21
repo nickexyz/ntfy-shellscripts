@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh"
-ntfy_topic="mytopic"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
-radarr_url=""
-radarr_api_key=""
-# Leave empty if you do not want an icon.
-ntfy_icon="https://raw.githubusercontent.com/Radarr/Radarr/develop/Logo/48.png"
+# load env file
+DIR=$(dirname "$0")
+. "$DIR/.env"
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
@@ -59,9 +52,9 @@ ntfy_post_data()
 {
   cat <<EOF
 {
-  "topic": "$ntfy_topic",
+  "topic": "$radarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
-  "icon": "$ntfy_icon",
+  "icon": "$radarr_ntfy_icon",
   "title": "Radarr: $radarr_eventtype",
   "attach": "$banner_image",     
   "message": "$ntfy_title$ntfy_message",
@@ -81,9 +74,9 @@ ntfy_post_data()
 {
   cat <<EOF
 {
-  "topic": "$ntfy_topic",
+  "topic": "$radarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
-  "icon": "$ntfy_icon",
+  "icon": "$radarr_ntfy_icon",
   "title": "Radarr: $radarr_eventtype",
   "message": "$ntfy_title$ntfy_message"
 }

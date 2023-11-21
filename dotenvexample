@@ -1,0 +1,37 @@
+ntfy_url="https://ntfy.sh"
+# Use ntfy_username and ntfy_password OR ntfy_token
+ntfy_username=""
+ntfy_password=""
+ntfy_token=""
+# Sonarr
+sonarr_url="" #Your Sonarr URL with no trailing slash
+sonarr_api_key=""
+sonarr_ntfy_topic="sonarr" # Set your subscription topic
+sonarr_ntfy_icon="https://raw.githubusercontent.com/Sonarr/Sonarr/develop/Logo/48.png" # Leave blank if you do not want an icon
+# Radarr
+radarr_url="" #Your Radarr URL with no trailing slash
+radarr_api_key=""
+radarr_ntfy_topic="radarr" # Set your subscription topic
+radarr_ntfy_icon="https://raw.githubusercontent.com/Radarr/Radarr/develop/Logo/48.png" # Leave blank if you do not want an icon
+# Readarr
+readarr_ntfy_topic="readarr" # Set your subscription topic
+readarr_ntfy_icon="https://raw.githubusercontent.com/Readarr/Readarr/develop/Logo/48.png" # Leave blank if you do not want an icon
+# Lidarr
+lidarr_ntfy_topic="lidarr" # Set your subscription topic
+lidarr_ntfy_icon="https://raw.githubusercontent.com/Lidarr/Lidarr/develop/Logo/48.png" # Leave blank if you do not want an icon
+# Opensense
+opensense_ntfy_topic="opensense" # Set your subscription topic
+opensense_ntfy_icon="https://raw.githubusercontent.com/opnsense/core/master/src/www/images/icons/icon-128x128.png" # Leave blank if you do not want an icon
+# Sabnzbd
+sabnzbd_ntfy_topic="sabnzbd" # Set your subscription topic
+sabnzbd_ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd/develop/interfaces/default/images/sabnzbd.png" # Leave blank if you do not want an icon
+# Prowlarr
+prowlarr_ntfy_topic="prowlarr" # Set your subscription topic
+prowlarr_ntfy_icon="https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/Logo/48.png" # Leave blank if you do not want an icon
+# ntfy
+ntfy_ntfy_topic="ntfy" # Set your subscription topic
+ntfy_ntfy_icon="https://raw.githubusercontent.com/dschep/ntfy/master/docs/logo.png" # Leave blank if you do not want an icon
+
+# Pushover
+pushover_app_token=""
+pushover_user_token=""

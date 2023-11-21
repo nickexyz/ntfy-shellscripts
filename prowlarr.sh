@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 
-ntfy_url="https://ntfy.sh/mytopic"
-# Use ntfy_username and ntfy_password OR ntfy_token
-ntfy_username=""
-ntfy_password=""
-ntfy_token=""
-# Leave empty if you do not want an icon.
-ntfy_icon="https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/Logo/48.png"
-
+# load env file
+# load env file
+DIR=$(dirname "$0")
+. "$DIR/.env"
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   echo "Use ntfy_username and ntfy_password OR ntfy_token"
   exit 1
@@ -43,6 +39,6 @@ curl $ntfy_auth \
 -H "$ntfy_auth" \
 -H "tags:"$ntfy_tag \
 -H "X-Title: Prowlarr: $prowlarr_eventtype" \
--H "X-Icon: $ntfy_icon" \
+-H "X-Icon: $prowlarr_ntfy_icon" \
 -d "$ntfy_title""$ntfy_message" \
---request POST $ntfy_url
+--request POST "$ntfy_url/$prowlarr_ntfy_topic"
