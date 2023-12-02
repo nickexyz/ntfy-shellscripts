@@ -24,13 +24,13 @@ opensense_ntfy_topic="opensense" # Set your subscription topic
 opensense_ntfy_icon="https://raw.githubusercontent.com/opnsense/core/master/src/www/images/icons/icon-128x128.png" # Leave blank if you do not want an icon
 # Sabnzbd
 sabnzbd_ntfy_topic="sabnzbd" # Set your subscription topic
-sabnzbd_ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd/develop/interfaces/default/images/sabnzbd.png" # Leave blank if you do not want an icon
+sabnzbd_ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd/develop/interfaces/Config/templates/staticcfg/ico/apple-touch-icon-120x120-precomposed.png" # Leave blank if you do not want an icon
 # Prowlarr
 prowlarr_ntfy_topic="prowlarr" # Set your subscription topic
 prowlarr_ntfy_icon="https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/Logo/48.png" # Leave blank if you do not want an icon
 # ntfy
 ntfy_ntfy_topic="ntfy" # Set your subscription topic
-ntfy_ntfy_icon="https://raw.githubusercontent.com/dschep/ntfy/master/docs/logo.png" # Leave blank if you do not want an icon
+ntfy_ntfy_icon="https://raw.githubusercontent.com/binwiederhier/ntfy/main/web/public/static/images/ntfy.png" # Leave blank if you do not want an icon
 
 # Pushover
 pushover_app_token=""
