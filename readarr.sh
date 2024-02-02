@@ -45,9 +45,9 @@ ntfy_post_data()
 {
   cat <<EOF
 {
-  "topic": "$ntfy_topic",
+  "topic": "$readarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
-  "icon": "$ntfy_icon",
+  "icon": "$readarr_ntfy_icon",
   "title": "Readarr: $readarr_eventtype",
   "message": "$ntfy_title$ntfy_message",
   "actions": [
