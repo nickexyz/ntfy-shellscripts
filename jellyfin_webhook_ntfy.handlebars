@@ -1,0 +1,504 @@
+This is a ntfy.sh template for the Jellyfin Webhook plugin.
+
+I got most of the inspiration from the examples here:
+https://github.com/jellyfin/jellyfin-plugin-webhook/tree/master/Jellyfin.Plugin.Webhook/Templates
+
+I've tried most of the notifications, but let me know if something isn't working.
+I'm pretty sure AuthenticationSuccess and AuthenticationFailure doesn't work at all, since there isn't any mention of them on the Notifications page on Jellyfin. If anyone has any ideas, an issue or a PR would be awesome.
+
+I'm sure it's possible to slim down this template quite a bit, but this is what we got for the moment. :)
+
+To enable the notifications, install the Webhook plugin, then click "Add Generic Destination" on the settings page.
+Set the "Webook URL" to your ntfy server, for example: ntfy.sh
+Check the boxes you want notifications from. (Make sure they are checked on the "Notifications" page as well.)
+Click "Add Request Header" (If you need to login) and enter "Authorization" in the Key field.
+In the "Value" field you need to enter a base64 encoded string of your username:password, prepended by "Basic"
+See https://docs.ntfy.sh/publish/#username-password , the oneliner you need is probably:
+echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
+
+Paste everything below this in the "Template" box, and click save. Do not forget to edit the "topic" field.
+
+{
+    "topic": "jellyfin",
+    "tags": ["octopus"],
+    "icon": "https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/tizen/icon.png",
+    {{#if_equals NotificationType 'Generic'}}
+        "title": "Jellyfin: Generic notification",
+        "message": "{{Name}}",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open Jellyfin",
+                       "url": "{{ServerUrl}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'ItemAdded'}}
+        "attach": "{{ServerUrl}}/Items/{{ItemId}}/Images/Primary",
+        {{~#if_exist Provider_imdb~}}
+             "title": "Jellyfin: Item added",
+             "actions": [
+                          {
+                            "action": "view",
+                            "label": "Open Jellyfin",
+                            "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                            "clear": true
+                          },
+                          {
+                            "action": "view",
+                            "label": "IMDb",
+                            "url": "https://www.imdb.com/title/{{Provider_imdb}}/",
+                            "clear": true
+                          }
+                        ],
+        {{~/if_exist~}}
+        {{~#if_exist Provider_tvdb~}}
+             {{~#if_equals ItemType 'Movie'~}}
+                  "title": "Jellyfin: Movie added",
+                  "actions": [
+                               {
+                                 "action": "view",
+                                 "label": "Open Jellyfin",
+                                 "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                                 "clear": true
+                               },
+                               {
+                                 "action": "view",
+                                 "label": "tvdb",
+                                 "url": "https://thetvdb.com/dereferrer/movie/{{Provider_tvdb}}",
+                                 "clear": true
+                               }
+                             ],
+             {{~else~}}
+                  {{~#if_equals ItemType 'Movie'~}}
+                       "title": "Jellyfin: Season added",
+                       "actions": [
+                                    {
+                                      "action": "view",
+                                      "label": "Open Jellyfin",
+                                      "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                                      "clear": true
+                                    },
+                                    {
+                                      "action": "view",
+                                      "label": "tvdb",
+                                      "url": "https://thetvdb.com/dereferrer/season/{{Provider_tvdb}}",
+                                      "clear": true
+                                    }
+                                  ],
+                  {{~else~}}
+                       "title": "Jellyfin: Episode added",
+                       "actions": [
+                                    {
+                                      "action": "view",
+                                      "label": "Open Jellyfin",
+                                      "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                                      "clear": true
+                                    },
+                                    {
+                                      "action": "view",
+                                      "label": "tvdb",
+                                      "url": "https://thetvdb.com/dereferrer/episode/{{Provider_tvdb}}",
+                                      "clear": true
+                                    }
+                  {{~/if_equals~}}                                  ],
+             {{~/if_equals~}}
+        {{~/if_exist~}}
+        {{~#if_exist Provider_tmdb~}}
+             {{~#if_equals ItemType 'Movie'~}}
+                  "title": "Jellyfin: Movie added",
+                  "actions": [
+                               {
+                                 "action": "view",
+                                 "label": "Open Jellyfin",
+                                 "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                                 "clear": true
+                               },
+                               {
+                                 "action": "view",
+                                 "label": "TMDb",
+                                 "url": "https://www.themoviedb.org/movie/{{Provider_tmdb}}",
+                                 "clear": true
+                               }
+                             ],
+             {{~else~}}
+                  "title": "Jellyfin: Episode added",
+                  "actions": [
+                               {
+                                 "action": "view",
+                                 "label": "Open Jellyfin",
+                                 "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                                 "clear": true
+                               },
+                               {
+                                 "action": "view",
+                                 "label": "TMDb",
+                                 "url": "https://www.themoviedb.org/tv/{{Provider_tmdb}}",
+                                 "clear": true
+                               }
+                             ],
+             {{~/if_equals~}}
+        {{~/if_exist~}}
+        {{~#if_exist Provider_musicbrainzartist~}}
+             "title": "Jellyfin: Music added",
+             "actions": [
+                          {
+                            "action": "view",
+                            "label": "Open Jellyfin",
+                            "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                            "clear": true
+                          },
+                          {
+                            "action": "view",
+                            "label": "MusicBrainz",
+                            "url": "https://musicbrainz.org/artist/{{Provider_musicbrainzartist}}",
+                            "clear": true
+                          }
+                        ],
+        {{~/if_exist~}}
+        {{#if_exist Provider_audiodbartist}}
+            "title": "Jellyfin: Music added",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Open Jellyfin",
+                           "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                           "clear": true
+                         },
+                         {
+                           "action": "view",
+                           "label": "AudioDb",
+                           "url": "https://theaudiodb.com/artist/{{Provider_audiodbartist}}",
+                           "clear": true
+                         }
+                       ],
+        {{~/if_exist~}}
+        {{~#if_exist Provider_musicbrainztrack~}}
+             "title": "Jellyfin: Music added",
+             "actions": [
+                          {
+                            "action": "view",
+                            "label": "Open Jellyfin",
+                            "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                            "clear": true
+                          },
+                          {
+                            "action": "view",
+                            "label": "MusicBrainz Track",
+                            "url": "https://musicbrainz.org/track/{{Provider_musicbrainztrack}}",
+                            "clear": true
+                          }
+                        ],
+        {{~/if_exist~}}
+        {{~#if_exist Provider_musicbrainzalbum~}}
+             "title": "Jellyfin: Music album added",
+             "actions": [
+                          {
+                            "action": "view",
+                            "label": "Open Jellyfin",
+                            "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                            "clear": true
+                          },
+                          {
+                            "action": "view",
+                            "label": "MusicBrainz Album",
+                            "url": "https://musicbrainz.org/release/{{Provider_musicbrainzalbum}}",
+                            "clear": true
+                          }
+                        ],
+        {{~/if_exist~}}
+        {{#if_exist Provider_theaudiodbalbum}}
+            "title": "Jellyfin: Music album added",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Open Jellyfin",
+                           "url": "{{ServerUrl}}/web/index.html#!/details?id={{ItemId}}&serverId={{ServerId}}",
+                           "clear": true
+                         },
+                         {
+                           "action": "view",
+                           "label": "TADb Album",
+                           "url": "https://theaudiodb.com/album/{{Provider_theaudiodbalbum}}",
+                           "clear": true
+                         }
+                       ],
+        {{~/if_exist~}}
+        {{#if_equals ItemType 'Episode'}}
+            "message": "{{SeriesName}} - S{{SeasonNumber00}}E{{EpisodeNumber00}} - {{Name}}"
+        {{else}}
+            {{#if_equals ItemType 'Season'}}
+                "message": "{{SeriesName}} - {{Name}}"
+            {{else}}
+                "message": "{{Name}} - ({{Year}}) - {{RunTime}}"
+            {{/if_equals}}
+        {{/if_equals}}
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PlaybackStart'}}
+        "title": "Jellyfin: Playback start",
+        {{#if_equals ItemType 'Episode'}}
+            "message": "User {{NotificationUsername}} started playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{else}}
+            "message": "User {{NotificationUsername}} started playing:\n{{Name}} ({{Year}}) {{RunTime}}",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{/if_equals}}
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PlaybackProgress'}}
+        "title": "Jellyfin: Playback progress",
+        {{#if_equals ItemType 'Episode'}}
+            "message": "User {{NotificationUsername}} is playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}, at position {{PlaybackPosition}} of {{RunTime}}",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{else}}
+            "message": "User {{NotificationUsername}} is playing:\n{{Name}} ({{Year}}) at position {{PlaybackPosition}} of {{RunTime}}",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{/if_equals}}
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PlaybackStop'}}
+        "title": "Jellyfin: Playback stop",
+        {{#if_equals ItemType 'Episode'}}
+            "message": "User {{NotificationUsername}} stopped playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{else}}
+            "message": "User {{NotificationUsername}} stopped playing:\n{{Name}} ({{Year}})",
+            "actions": [
+                         {
+                           "action": "view",
+                           "label": "Manage user",
+                           "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                           "clear": true
+                         }
+                       ]
+        {{/if_equals}}
+    {{/if_equals}}
+    {{#if_equals NotificationType 'SubtitleDownloadFailure'}}
+        "title": "Jellyfin: Subtitle download failure",
+        {{#if_equals ItemType 'Episode'}}
+            "message": "Warning: Subtitle failed to download:\n{{SeriesName}} - S{{SeasonNumber00}}E{{EpisodeNumber00}} - {{Name}}"
+        {{else}}
+            "message": "Warning: Subtitle failed to download:\n{{Name}} - ({{Year}})"
+        {{/if_equals}}
+    {{/if_equals}}
+    {{#if_equals NotificationType 'TaskCompleted'}}
+        "title": "Jellyfin: Task completed",
+        "message": "Task completed with status {{ResultStatus}}, check logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PendingRestart'}}
+        "title": "Jellyfin: Server needs to be restarted"
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginInstallationCancelled'}}
+        "title": "Jellyfin: Plugin installation cancelled",
+        "message": "Check logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginInstallationFailed'}}
+        "title": "Jellyfin: Plugin installation failed",
+        "message": "Check logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginInstalled'}}
+        "title": "Jellyfin: Plugin successfully installed",
+        "message": "Server restart needed",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginInstalling'}}
+        "title": "Jellyfin: Plugin is installing now"
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginUninstalled'}}
+        "title": "Jellyfin: Plugin successfully uninstalled",
+        "message": "Check logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'PluginUpdated'}}
+        "title": "Jellyfin: Plugin successfully updated",
+        "message": "Check logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Open logs",
+                       "url": "{{ServerUrl}}/web/index.html#!/log.html",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'SessionStart'}}
+        "title": "Jellyfin: User active",
+        "message": "User {{NotificationUsername}} now active.\nClient: {{ClientName}}\nDevice: {{DeviceName}}",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserCreated'}}
+        "title": "Jellyfin: User created",
+        "message": "User {{NotificationUsername}} was added successfully",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserDeleted'}}
+        "title": "Jellyfin: User deleted",
+        "message": "User {{NotificationUsername}} was deleted",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserLockedOut'}}
+        "title": "Jellyfin: User locked out",
+        "message": "Warning: User {{NotificationUsername}} was locked out.",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserPasswordChanged'}}
+        "title": "Jellyfin: User password changed",
+        "message": "User {{NotificationUsername}} password changed successfully",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserUpdated'}}
+        "title": "Jellyfin: User updated",
+        "message": "User {{NotificationUsername}} was updated successfully",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'UserDataSaved'}}
+        "title": "Jellyfin: User data saved",
+        "message": "User {{NotificationUsername}} data was saved",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'AuthenticationSuccess'}}
+        "title": "Jellyfin: Authentication success",
+        "message": "User {{NotificationUsername}} successfully logged on. Client: {{ClientName}} Device: {{DeviceName}}",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+    {{#if_equals NotificationType 'AuthenticationFailure'}}
+        "title": "Jellyfin: Authentication failed",
+        "message": "Warning: User {{NotificationUsername}} failed to authenticate. Client: {{ClientName}} Device: {{DeviceName}}, check server logs for details",
+        "actions": [
+                     {
+                       "action": "view",
+                       "label": "Manage user",
+                       "url": "{{ServerUrl}}/web/index.html#!/useredit.html?userId={{UserId}}",
+                       "clear": true
+                     }
+                   ]
+    {{/if_equals}}
+}
