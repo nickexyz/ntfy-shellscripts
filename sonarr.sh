@@ -79,7 +79,7 @@ ntfy_post_data()
     {
       "action": "view",
       "label": "TVDB",
-      "url": "https://www.thetvdb.com/?id=$sonarr_series_tvdbid&tab=series",
+      "url": "https://www.thetvdb.com/dereferrer/series/$sonarr_series_tvdbid",
       "clear": true
     }
   ]
