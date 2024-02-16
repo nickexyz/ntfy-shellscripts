@@ -329,7 +329,8 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PendingRestart'}}
-        "title": "Jellyfin: Server needs to be restarted"
+        "title": "Jellyfin: Server needs to be restarted",
+        "message": "Check logs for details"
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstallationCancelled'}}
         "title": "Jellyfin: Plugin installation cancelled",
@@ -368,7 +369,8 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstalling'}}
-        "title": "Jellyfin: Plugin is installing now"
+        "title": "Jellyfin: Plugin is installing now",
+        "message": "Check logs for details"
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginUninstalled'}}
         "title": "Jellyfin: Plugin successfully uninstalled",
