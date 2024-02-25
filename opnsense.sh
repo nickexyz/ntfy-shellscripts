@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # load env file from $NTFY_ENV or script dir
-SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")}
+SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 [ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 

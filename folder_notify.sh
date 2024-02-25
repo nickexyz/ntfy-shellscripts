@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# load env file from $NTFY_ENV or script dir
-SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")}
+# load env file from $NTFY_ENV or 'env' in script dir
+SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 [ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 # This script counts the files in the directories that you specify

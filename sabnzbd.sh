@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # load env file from $NTFY_ENV or script dir
-SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")}
+SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 [ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
