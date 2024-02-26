@@ -14,6 +14,9 @@ They are quick and dirty, but works for my use case.
 2. Populate the variables for the scripts you would like to use.
 3. If you are cherry picking particular scripts to move to a host, ensure the `.env` exists in the same directory as the script
 
+It is also possible to specify the path to the env file with the variable `NTFY_ENV`  
+For example: `NTFY_ENV="/tmp/myenvfile" /opt/ntfy.sh`
+
 # Other
 ntfy.sh is a generic ntfy script.  
 read_notify.sh and folder_notify.sh are two quick scripts that sends notifications when new files are added.  
