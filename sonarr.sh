@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# load env file (change this to the path of your env file if not in same directory as this script)
-DIR=$(dirname "$0")
-. "$DIR/.env"
+# load env file from $NTFY_ENV or script dir
+SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
+[ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 # Function to retrieve the banner image for a series from Sonarr API. Parameters are taken from env file
 # Outputs series banner_image URL for use in ntfy_post_data()  

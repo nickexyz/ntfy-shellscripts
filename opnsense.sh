@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# load env file
-DIR=$(dirname "$0")
-. "$DIR/.env"
+# load env file from $NTFY_ENV or script dir
+SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
+[ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 
 # This is kind of a not very good way to get ntfy notifications from Monit in OPNsense.
