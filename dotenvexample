@@ -19,9 +19,9 @@ readarr_ntfy_icon="https://raw.githubusercontent.com/Readarr/Readarr/develop/Log
 # Lidarr
 lidarr_ntfy_topic="lidarr" # Set your subscription topic
 lidarr_ntfy_icon="https://raw.githubusercontent.com/Lidarr/Lidarr/develop/Logo/48.png" # Leave blank if you do not want an icon
-# Opensense
-opensense_ntfy_topic="opensense" # Set your subscription topic
-opensense_ntfy_icon="https://raw.githubusercontent.com/opnsense/core/master/src/www/images/icons/icon-128x128.png" # Leave blank if you do not want an icon
+# OPNsense
+opnsense_ntfy_topic="opnsense" # Set your subscription topic
+opnsense_ntfy_icon="https://raw.githubusercontent.com/opnsense/core/master/src/www/images/icons/icon-128x128.png" # Leave blank if you do not want an icon
 # Sabnzbd
 sabnzbd_ntfy_topic="sabnzbd" # Set your subscription topic
 sabnzbd_ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd/develop/interfaces/Config/templates/staticcfg/ico/apple-touch-icon-120x120-precomposed.png" # Leave blank if you do not want an icon
