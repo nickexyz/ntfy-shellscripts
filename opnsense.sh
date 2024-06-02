@@ -22,6 +22,6 @@ SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 # No auth:
 curl -H "tags:warning" -H "X-Icon: $opnsense_ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opnsense_ntfy_topic"
 # Token
-#curl -H "Authorization: Bearer $ntfy_token" -H "tags:warning" -H "X-Icon: $opensense_ntfy_icon"" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opensense_ntfy_topic"
+#curl -H "Authorization: Bearer $ntfy_token" -H "tags:warning" -H "X-Icon: $opnsense_ntfy_icon"" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opnsense_ntfy_topic"
 # User and password
-#curl -u $ntfy_username:$ntfy_password -H "tags:warning" -H "X-Icon: $opensense_ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opensense_ntfy_topic"
+#curl -u $ntfy_username:$ntfy_password -H "tags:warning" -H "X-Icon: $opnsense_ntfy_icon" -H "X-Title: $MONIT_HOST $MONIT_SERVICE" -d "$MONIT_DESCRIPTION" --request POST "$ntfy_url/$opnsense_ntfy_topic"
