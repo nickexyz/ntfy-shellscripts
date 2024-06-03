@@ -21,6 +21,14 @@ ntfy_message=" "
 if [ "$radarr_eventtype" == "Test" ]; then
   ntfy_tag=information_source
   ntfy_title="Testing"
+elif [ "$radarr_eventtype" == "Grab" ]; then
+  ntfy_tag=film_projector
+  ntfy_message+=" ("
+  ntfy_message+=$radarr_movie_year
+  ntfy_message+=")"
+  ntfy_message+=" ["
+  ntfy_message+=$radarr_moviefile_quality
+  ntfy_message+="]"
 elif [ "$radarr_eventtype" == "Download" ]; then
   ntfy_tag=film_projector
   ntfy_message+=" ("
