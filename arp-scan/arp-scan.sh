@@ -1,7 +1,14 @@
 #!/bin/sh
 
+# If updating this script from an earlier version, you will probably need to remove the existing SQLite db.
+
 # This is a script that scans for new IP/MAC pairs from an OPNsense machine.
 # If found, it sends a notification through NTFY or Pushover and logs the new IP/MAC pair in OPNsense.
+#
+# It will also include the manufacturer of the MAC address, taken from this list: https://standards-oui.ieee.org/oui/oui.csv
+# When you run install.sh the csv will be downloaded and imported to the SQLite db.
+# If you want to update the OUI DB manually you can do so like this:
+# ./arp-scan.sh import-oui
 
 # The idea is based on this script: https://gist.github.com/mimugmail/6cee79cdf97d49b1d6fc130e79dc3fa9
 
@@ -35,6 +42,7 @@
 SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 [ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
+oui_url="https://standards-oui.ieee.org/oui/oui.csv"
 our_path="/usr/local/opnsense/scripts/arp-scan/data"
 db_file="$our_path/arp-scan.db"
 
@@ -42,7 +50,7 @@ lockfile="/tmp/arp-scan.lock"
 cleanup() {
   rm -f "$lockfile"
 }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 if [ -e "$lockfile" ]; then
   echo "Another instance of the script is already running."
@@ -109,6 +117,11 @@ CREATE TABLE IF NOT EXISTS counter_table (
   counter INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS oui (
+  oui TEXT,
+  manufacturer TEXT
+  );
+
 INSERT INTO counter_table (counter)
 SELECT 0
 WHERE NOT EXISTS (SELECT 1 FROM counter_table);
@@ -117,6 +130,59 @@ CREATE TABLE IF NOT EXISTS db_changed (
   id INTEGER PRIMARY KEY
 );
 EOF
+
+# Function to download and import oui.csv
+import_oui() {
+  curl -o /tmp/arp-scan-oui.csv "$oui_url"
+  if [ $? -ne 0 ]; then
+    echo "Download of oui.csv failed, exiting..." >&2
+    exit 1
+  fi
+  if [ ! -f /tmp/arp-scan-oui.csv ]; then
+    echo "The file /tmp/arp-scan-oui.csv does not exist. Exiting..."
+    exit 1
+  fi
+
+  sqlite3 "$db_file" <<EOF
+  DROP TABLE IF EXISTS oui;
+  CREATE TABLE oui (
+    oui TEXT,
+    manufacturer TEXT
+  );
+EOF
+
+  echo "Starting OUI import, this may take a while..."
+
+  # Read the oui.csv file and import into SQLite
+  tail -n +2 /tmp/arp-scan-oui.csv | while IFS=, read -r registry assignment organization_name organization_address; do
+    # Remove double quotes from organization_name and organization_address
+    organization_name=$(echo $organization_name | sed 's/^"//;s/"$//')
+    # Insert into SQLite
+    sqlite3 "$db_file" "INSERT OR IGNORE INTO oui (oui, manufacturer) VALUES ('$assignment', '$(echo $organization_name | sed "s/'/''/g")');"
+  done
+
+  rm "/tmp/arp-scan-oui.csv"
+  echo "Import completed."
+}
+
+# Run import_oui function if script is run with import-oui
+case "$1" in
+  import-oui)
+    import_oui
+    exit 0
+    ;;
+esac
+
+lookup_oui() {
+  oui=$(echo $1 | tr -d ':.-' | cut -c -6 | tr '[:lower:]' '[:upper:]')
+  manufacturer=$(sqlite3 "$db_file" "SELECT manufacturer FROM oui WHERE oui = '$oui';")
+
+  if [ -n "$manufacturer" ]; then
+    echo "Manufacturer: $manufacturer"
+  else
+    echo "Manufacturer: Not found"
+  fi
+}
 
 # Function to insert new entries into table
 insert_entry() {
@@ -206,7 +272,10 @@ EOF
 # Check new entries one by one and send notifications
 echo "$new_entries" | while IFS='|' read -r ip mac; do
   if [ -n "$ip" ] && [ -n "$mac" ]; then
-    initial_message="$ip $mac"
+    lookup_oui=$(lookup_oui $mac)
+    initial_message="$ip $mac
+$lookup_oui
+"
     update_message "$initial_message"
 
     # Check for other rows with the same IP

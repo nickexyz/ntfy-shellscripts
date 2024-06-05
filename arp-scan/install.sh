@@ -16,3 +16,6 @@ chown root:wheel /usr/local/opnsense/service/conf/actions.d/actions_arp-scan.con
 chmod 644 /usr/local/opnsense/service/conf/actions.d/actions_arp-scan.conf
 
 service configd restart
+
+echo "Downloading and importing OUI"
+$our_path/arp-scan.sh import-oui
