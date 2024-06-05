@@ -18,4 +18,4 @@ chmod 644 /usr/local/opnsense/service/conf/actions.d/actions_arp-scan.conf
 service configd restart
 
 echo "Downloading and importing OUI"
-$our_path/arp-scan.sh import-oui
+$install_path/arp-scan.sh import-oui
