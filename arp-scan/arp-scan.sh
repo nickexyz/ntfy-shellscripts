@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# If updating this script from an earlier version, you will probably need to remove the existing SQLite db.
+# If updating this script from an earlier version, you might need to remove the existing SQLite db.
 
 # This is a script that scans for new IP/MAC pairs from an OPNsense machine.
 # If found, it sends a notification through NTFY or Pushover and logs the new IP/MAC pair in OPNsense.
@@ -9,6 +9,8 @@
 # When you run install.sh the csv will be downloaded and imported to the SQLite db.
 # If you want to update the OUI DB manually you can do so like this:
 # ./arp-scan.sh import-oui
+#
+# If you choose to use NTFY, there will be an action button to search the MAC prefix on dnschecker.org.
 
 # The idea is based on this script: https://gist.github.com/mimugmail/6cee79cdf97d49b1d6fc130e79dc3fa9
 
@@ -77,12 +79,13 @@ $1" https://api.pushover.net/1/messages
       ntfy_auth=""
       ntfy_header=""
     fi
-
+    mac_prefix=$(echo $mac | tr -d ':.-' | cut -c -6 | tr '[:lower:]' '[:upper:]')
     curl -s $ntfy_auth \
     -H "$ntfy_header" \
     -H "tags:computer" \
     -H "X-Title: OPNsense" \
     -H "X-Icon: $opnsense_ntfy_icon" \
+    -H "Actions: view, Lookup MAC prefix, https://dnschecker.org/mac-lookup.php?query=$mac_prefix, clear=true;" \
     -d "New IPv4/MAC pair seen:
 $1" --request POST "$ntfy_url/$opnsense_ntfy_topic"
   fi
