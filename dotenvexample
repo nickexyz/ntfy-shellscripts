@@ -28,9 +28,16 @@ sabnzbd_ntfy_icon="https://raw.githubusercontent.com/sabnzbd/sabnzbd/develop/int
 # Prowlarr
 prowlarr_ntfy_topic="prowlarr" # Set your subscription topic
 prowlarr_ntfy_icon="https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/Logo/48.png" # Leave blank if you do not want an icon
-# ntfy
+# ntfy.sh
 ntfy_ntfy_topic="ntfy" # Set your subscription topic
 ntfy_ntfy_icon="https://raw.githubusercontent.com/binwiederhier/ntfy/main/web/public/static/images/ntfy.png" # Leave blank if you do not want an icon
+# Fortinet Firmware
+fortinet_firmware_ntfy_topic="fortinet" # Set your subscription topic
+fortinet_firmware_old_posts_path="/some/path" # Set a path where old posts will be stored
+fortinet_firmware_keywords=("FortiOS" "FortiSwitch" "FortiClient") # Set keywords for which products you want to monitor versions
+# Fortinet Fortiguard
+fortinet_fortiguard_ntfy_topic="fortinet" # Set your subscription topic
+fortinet_fortiguard_old_posts_path="/some/path" # Set a path where old posts will be stored
 
 # Pushover
 pushover_app_token=""

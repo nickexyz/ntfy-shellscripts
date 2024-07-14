@@ -35,7 +35,7 @@ elif [ "$prowlarr_eventtype" == "HealthIssue" ]; then
   ntfy_message+="$prowlarr_health_issue_message"
 fi
 
-curl $ntfy_auth \
+curl \
 -H "$ntfy_auth" \
 -H "tags:"$ntfy_tag \
 -H "X-Title: Prowlarr: $prowlarr_eventtype" \
