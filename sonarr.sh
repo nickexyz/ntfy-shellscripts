@@ -5,7 +5,7 @@ SCRIPTPATH=${NTFY_ENV:-$(dirname "$0")/.env}
 [ -f ${SCRIPTPATH} ] && . "${SCRIPTPATH}" || echo "ENV missing: ${SCRIPTPATH}"
 
 # Function to retrieve the banner image for a series from Sonarr API. Parameters are taken from env file
-# Outputs series banner_image URL for use in ntfy_post_data()  
+# Outputs series banner_image URL for use in ntfy_post_data()
 get_banner_image()
 {
   headers_file=$(mktemp)
@@ -30,7 +30,7 @@ get_banner_image()
 # If only one is set, set the ntfy_auth variable accordingly
 if [[ -n $ntfy_password && -n $ntfy_token ]]; then
   >&2 echo "Use ntfy_username and ntfy_password OR ntfy_token"
-  exit 3  
+  exit 3
 elif [ -n "$ntfy_password" ]; then
   ntfy_base64=$( echo -n "$ntfy_username:$ntfy_password" | base64 )
   ntfy_auth="Authorization: Basic $ntfy_base64"
@@ -46,6 +46,11 @@ ntfy_message=" "
 if [ "$sonarr_eventtype" == "Test" ]; then
   ntfy_tag=information_source
   ntfy_title="Testing"
+elif [ "$sonarr_eventtype" == "Grab" ]; then
+  get_banner_image # Call get_banner_image function to retrieve the banner image for the series
+  ntfy_tag=tv
+  ntfy_title="$ntfy_title - S$sonarr_release_seasonnumber:E$sonarr_release_episodenumbers"
+  ntfy_message="- $sonarr_release_episodetitles [$sonarr_release_quality]"
 elif [ "$sonarr_eventtype" == "Download" ]; then
   get_banner_image # Call get_banner_image function to retrieve the banner image for the series
   ntfy_tag=tv
@@ -64,7 +69,7 @@ fi
 # Generates JSON data for sending to ntfy.
 # If the value of "sonarr_eventtype" is "Download", include additional fields for attaching a banner image and a link to the TVDB website.
 # Otherwise, generate JSON data without these additional fields.
-if [ "$sonarr_eventtype" == "Download" ]; then
+if [[ "$sonarr_eventtype" == "Download" || "$sonarr_eventtype" == "Grab" ]]; then
 ntfy_post_data()
 {
   cat <<EOF
@@ -72,7 +77,7 @@ ntfy_post_data()
   "topic": "$sonarr_ntfy_topic",
   "tags": ["$ntfy_tag"],
   "icon": "$sonarr_ntfy_icon",
-  "attach": "$banner_image",   
+  "attach": "$banner_image",
   "title": "Sonarr: $sonarr_eventtype",
   "message": "$ntfy_title$ntfy_message",
   "actions": [

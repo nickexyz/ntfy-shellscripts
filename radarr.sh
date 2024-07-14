@@ -52,7 +52,7 @@ else
   ntfy_tag=information_source
 fi
 
-if [ "$radarr_eventtype" == "Download" ]; then
+if [[ "$radarr_eventtype" == "Download" || "$radarr_eventtype" == "Grab" ]]; then
 # Get the movie poster from Radarr
 response=$(curl -X GET -H "Content-Type: application/json" -H "X-Api-Key: $radarr_api_key" "$radarr_url/api/v3/movie/$radarr_movie_id")
 banner_image=$(echo "$response" | jq -r '.images[0].remoteUrl')
