@@ -27,7 +27,7 @@ elif [ "$radarr_eventtype" == "Grab" ]; then
   ntfy_message+=$radarr_movie_year
   ntfy_message+=")"
   ntfy_message+=" ["
-  ntfy_message+=$radarr_moviefile_quality
+  ntfy_message+=$radarr_release_quality
   ntfy_message+="]"
 elif [ "$radarr_eventtype" == "Download" ]; then
   ntfy_tag=film_projector
