@@ -31,6 +31,9 @@ prowlarr_ntfy_icon="https://raw.githubusercontent.com/Prowlarr/Prowlarr/develop/
 # ntfy.sh
 ntfy_ntfy_topic="ntfy" # Set your subscription topic
 ntfy_ntfy_icon="https://raw.githubusercontent.com/binwiederhier/ntfy/main/web/public/static/images/ntfy.png" # Leave blank if you do not want an icon
+# ntfy-fail2ban.sh
+fail2ban_ntfy_topic="fail2ban" # Set your subscription topic
+fail2ban_log_path="/path/to/fail2ban.log" # The path to your fail2ban logfile
 # Fortinet Firmware
 fortinet_firmware_ntfy_topic="fortinet" # Set your subscription topic
 fortinet_firmware_old_posts_path="/some/path" # Set a path where old posts will be stored
