@@ -22,7 +22,8 @@ send_ntfy() {
     -H "tags: no_entry" \
     -H "X-Priority: 3" \
     -H "X-Title: Server: $HOSTNAME" \
-    -d "Fail2Ban: $CLEAN_LINE" \
+    -H "Actions: view, Lookup IP, https://bgp.he.net/ip/$ip_address, clear=true;" \
+    -d "Fail2Ban: $clean_line" \
     --request POST "$ntfy_url/$fail2ban_ntfy_topic" > /dev/null
 }
 
@@ -30,7 +31,8 @@ send_ntfy() {
 tail -n0 -F "$fail2ban_log_path" | while read LINE; do
   if echo "$LINE" | egrep "Ban"; then
     # Clean up the log message
-    CLEAN_LINE=$(echo "$LINE" | sed -n 's/.*\(\[[^][]*\].*\)/\1/p')
+    clean_line=$(echo "$LINE" | sed -n 's/.*\(\[[^][]*\].*\)/\1/p')
+    ip_address=$(echo "$clean_line" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])')
     send_ntfy
   fi
 done
