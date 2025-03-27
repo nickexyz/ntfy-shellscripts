@@ -31,15 +31,63 @@ jobs:
     steps:
       - name: Job Started
         run: |
-          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nSTARTED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:timer_clock" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"   
+          echo -e "Repo: ${{ gitea.repository }} \
+          \nBranch: ${{ gitea.ref }} \
+          \nArch: ${{ runner.arch }} \
+          \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \
+          \nSTARTED" | \
+          curl -s \
+          -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" \
+          -H "tags:timer_clock" \
+          -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/\
+          public/assets/img/favicon.png" \
+          -H "Actions: view, Open run, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/\
+          ${{ gitea.run_number }}, clear=true; view, Open repo, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" \
+          -H "X-Title: Gitea Actions" \
+          -T- "${{ secrets.NTFY_URL }}"
+
       - name: Doing stuff
         run: |
-          echo "Do something here..."   
+          echo "Do something here..."
+
       - name: Job Succeeded
         if: success()
         run: |
-          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nSUCCEEDED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:heavy_check_mark" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"
+          echo -e "Repo: ${{ gitea.repository }} \
+          \nBranch: ${{ gitea.ref }} \
+          \nArch: ${{ runner.arch }} \
+          \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \
+          \nSUCCEEDED" | \
+          curl -s \
+          -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" \
+          -H "tags:heavy_check_mark" \
+          -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/\
+          public/assets/img/favicon.png" \
+          -H "Actions: view, Open run, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/\
+          ${{ gitea.run_number }}, clear=true; view, Open repo, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" \
+          -H "X-Title: Gitea Actions" \
+          -T- "${{ secrets.NTFY_URL }}"
+
       - name: Job Failed
         if: failure()
         run: |
-          echo -e "Repo: ${{ gitea.repository }} \nBranch: ${{ gitea.ref }} \nArch: ${{ runner.arch }} \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \nFAILED" | curl -s -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" -H "tags:x" -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/public/assets/img/favicon.png" -H "Actions: view, Open run, ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/1, clear=true; view, Open repo, ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" -H "X-Title: Gitea Actions" -T- "${{ secrets.NTFY_URL }}"
+          echo -e "Repo: ${{ gitea.repository }} \
+          \nBranch: ${{ gitea.ref }} \
+          \nArch: ${{ runner.arch }} \
+          \nBuild ${{ gitea.ref_name }} by ${{ gitea.actor }} \
+          \nFAILED" | \
+          curl -s \
+          -u "${{ secrets.NTFY_USR }}":"${{ secrets.NTFY_PWD }}" \
+          -H "tags:x" \
+          -H "X-Icon: https://raw.githubusercontent.com/go-gitea/gitea/main/\
+          public/assets/img/favicon.png" \
+          -H "Actions: view, Open run, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/\
+          ${{ gitea.run_number }}, clear=true; view, Open repo, \
+          ${{ gitea.server_url }}/${{ gitea.repository }}, clear=true;" \
+          -H "X-Title: Gitea Actions" \
+          -T- "${{ secrets.NTFY_URL }}"

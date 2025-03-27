@@ -1,5 +1,7 @@
 You can enable ntfy notifications here in qBittorrent:
-Settings -> Downloads -> Autorun enabled
+Settings -> Downloads -> Run external program on torrent finished
+
+Enter the curl command below, or place it in a script.
 
 If you want to use an access token, replace:
 "-u USERNAME:PASSWORD"
