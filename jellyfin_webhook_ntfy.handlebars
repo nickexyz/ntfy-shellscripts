@@ -12,7 +12,9 @@ To enable the notifications, install the Webhook plugin, then click "Add Generic
 Set the "Webook URL" to your ntfy server, for example: ntfy.sh
 Check the boxes you want notifications from. (Make sure they are checked on the "Notifications" page as well.)
 Click "Add Request Header" (If you need to login) and enter "Authorization" in the Key field.
-In the "Value" field you need to enter a base64 encoded string of your username:password, prepended by "Basic"
+In the "Value" field you need to enter "Bearer" followed by an access token (see https://docs.ntfy.sh/publish/#access-tokens).
+The entered value should look something like this: "Bearer tk_<alphanumeric_stuff>".
+Alternatively, while not recommended, a base64 encoded string of your username:password, prepended by "Basic" can be used.
 See https://docs.ntfy.sh/publish/#username-password , the oneliner you need is probably:
 echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
 
@@ -20,9 +22,9 @@ Paste everything below this in the "Template" box, and click save. Do not forget
 
 {
     "topic": "jellyfin",
-    "tags": ["octopus"],
     "icon": "{{ServerUrl}}/web/favicon.png",
     {{#if_equals NotificationType 'Generic'}}
+        "tags": ["octopus"],
         "title": "Jellyfin: Generic notification",
         "message": "{{Name}}",
         "actions": [
@@ -35,6 +37,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'ItemAdded'}}
+        "tags": ["partying_face","film_projector"],
         "attach": "{{ServerUrl}}/Items/{{ItemId}}/Images/Primary",
         {{~#if_exist Provider_imdb~}}
              "title": "Jellyfin: Item added",
@@ -237,6 +240,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
         {{/if_equals}}
     {{/if_equals}}
     {{#if_equals NotificationType 'PlaybackStart'}}
+        "tags": ["octopus"],
         "title": "Jellyfin: Playback start",
         {{#if_equals ItemType 'Episode'}}
             "message": "User {{NotificationUsername}} started playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}",
@@ -261,6 +265,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
         {{/if_equals}}
     {{/if_equals}}
     {{#if_equals NotificationType 'PlaybackProgress'}}
+        "tags": ["octopus"],
         "title": "Jellyfin: Playback progress",
         {{#if_equals ItemType 'Episode'}}
             "message": "User {{NotificationUsername}} is playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}, at position {{PlaybackPosition}} of {{RunTime}}",
@@ -285,6 +290,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
         {{/if_equals}}
     {{/if_equals}}
     {{#if_equals NotificationType 'PlaybackStop'}}
+        "tags": ["octopus"],
         "title": "Jellyfin: Playback stop",
         {{#if_equals ItemType 'Episode'}}
             "message": "User {{NotificationUsername}} stopped playing:\n{{SeriesName}} S{{SeasonNumber00}}E{{EpisodeNumber00}} {{Name}}",
@@ -309,6 +315,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
         {{/if_equals}}
     {{/if_equals}}
     {{#if_equals NotificationType 'SubtitleDownloadFailure'}}
+        "tags": ["warning"],
         "title": "Jellyfin: Subtitle download failure",
         {{#if_equals ItemType 'Episode'}}
             "message": "Warning: Subtitle failed to download:\n{{SeriesName}} - S{{SeasonNumber00}}E{{EpisodeNumber00}} - {{Name}}"
@@ -317,6 +324,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
         {{/if_equals}}
     {{/if_equals}}
     {{#if_equals NotificationType 'TaskCompleted'}}
+        "tags": ["white_check_mark"],
         "title": "Jellyfin: Task completed",
         "message": "Task completed with status {{ResultStatus}}, check logs for details",
         "actions": [
@@ -329,10 +337,12 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PendingRestart'}}
+        "tags": ["hourglass_flowing_sand"],
         "title": "Jellyfin: Server needs to be restarted",
         "message": "Check logs for details"
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstallationCancelled'}}
+        "tags": ["exclamation"],
         "title": "Jellyfin: Plugin installation cancelled",
         "message": "Check logs for details",
         "actions": [
@@ -345,6 +355,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstallationFailed'}}
+        "tags": ["warning"],
         "title": "Jellyfin: Plugin installation failed",
         "message": "Check logs for details",
         "actions": [
@@ -357,6 +368,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstalled'}}
+        "tags": ["white_check_mark"],
         "title": "Jellyfin: Plugin successfully installed",
         "message": "Server restart needed",
         "actions": [
@@ -369,10 +381,12 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginInstalling'}}
+        "tags": ["hourglass_flowing_sand"],
         "title": "Jellyfin: Plugin is installing now",
         "message": "Check logs for details"
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginUninstalled'}}
+        "tags": ["white_check_mark"],
         "title": "Jellyfin: Plugin successfully uninstalled",
         "message": "Check logs for details",
         "actions": [
@@ -385,6 +399,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'PluginUpdated'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: Plugin successfully updated",
         "message": "Check logs for details",
         "actions": [
@@ -397,6 +412,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'SessionStart'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User active",
         "message": "User {{NotificationUsername}} now active.\nClient: {{ClientName}}\nDevice: {{DeviceName}}",
         "actions": [
@@ -409,6 +425,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserCreated'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User created",
         "message": "User {{NotificationUsername}} was added successfully",
         "actions": [
@@ -421,6 +438,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserDeleted'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User deleted",
         "message": "User {{NotificationUsername}} was deleted",
         "actions": [
@@ -433,6 +451,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserLockedOut'}}
+        "tags": ["exclamation"],
         "title": "Jellyfin: User locked out",
         "message": "Warning: User {{NotificationUsername}} was locked out.",
         "actions": [
@@ -445,6 +464,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserPasswordChanged'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User password changed",
         "message": "User {{NotificationUsername}} password changed successfully",
         "actions": [
@@ -457,6 +477,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserUpdated'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User updated",
         "message": "User {{NotificationUsername}} was updated successfully",
         "actions": [
@@ -469,6 +490,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'UserDataSaved'}}
+        "tags": ["information_source"],
         "title": "Jellyfin: User data saved",
         "message": "User {{NotificationUsername}} data was saved",
         "actions": [
@@ -481,6 +503,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'AuthenticationSuccess'}}
+        "tags": ["white_check_mark"],
         "title": "Jellyfin: Authentication success",
         "message": "User {{NotificationUsername}} successfully logged on. Client: {{ClientName}} Device: {{DeviceName}}",
         "actions": [
@@ -493,6 +516,7 @@ Paste everything below this in the "Template" box, and click save. Do not forget
                    ]
     {{/if_equals}}
     {{#if_equals NotificationType 'AuthenticationFailure'}}
+        "tags": ["exclamation"],
         "title": "Jellyfin: Authentication failed",
         "message": "Warning: User {{NotificationUsername}} failed to authenticate. Client: {{ClientName}} Device: {{DeviceName}}, check server logs for details",
         "actions": [
