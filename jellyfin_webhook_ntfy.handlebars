@@ -12,7 +12,9 @@ To enable the notifications, install the Webhook plugin, then click "Add Generic
 Set the "Webook URL" to your ntfy server, for example: ntfy.sh
 Check the boxes you want notifications from. (Make sure they are checked on the "Notifications" page as well.)
 Click "Add Request Header" (If you need to login) and enter "Authorization" in the Key field.
-In the "Value" field you need to enter a base64 encoded string of your username:password, prepended by "Basic"
+In the "Value" field you need to enter "Bearer" followed by an access token (see https://docs.ntfy.sh/publish/#access-tokens).
+The entered value should look something like this: "Bearer tk_<alphanumeric_stuff>".
+Alternatively, while not recommended, a base64 encoded string of your username:password, prepended by "Basic" can be used.
 See https://docs.ntfy.sh/publish/#username-password , the oneliner you need is probably:
 echo "Basic $(echo -n 'testuser:fakepassword' | base64)"
 
