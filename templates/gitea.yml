@@ -1,0 +1,323 @@
+# Use the Gitea webhook type in Gitea.
+# URL: https://example.com/my_topic?template=gitea
+#
+# Created with Claude and pretty untested.
+# Seems to work fine so far, but bugs may exist. 
+# Use at your own risk. :)
+#
+
+topic: "{{ .repository.name | default \"gitea\" | lower | replace \" \" \"-\" }}"
+
+title: >-
+  {{- if .repository -}}
+    🍵 {{ .repository.full_name }}
+  {{- else -}}
+    🍵 Gitea Event
+  {{- end -}}
+
+message: >-
+  {{- if .commits -}}
+    {{- $commitCount := len .commits -}}
+    {{- if eq $commitCount 1 -}}
+      🔀 {{ (index .commits 0).author.name }} pushed to `{{ .ref | replace "refs/heads/" "" | replace "refs/tags/" "" }}`
+
+      {{ (index .commits 0).message }}
+    {{- else -}}
+      🔀 {{ .pusher.full_name }} pushed {{ $commitCount }} commits to `{{ .ref | replace "refs/heads/" "" | replace "refs/tags/" "" }}`
+      {{- range .commits }}
+
+      • {{ .message }}
+      {{- end -}}
+    {{- end -}}
+  {{- else if .workflow_run -}}
+    {{- if eq .action "completed" -}}
+      {{- if eq .workflow_run.conclusion "success" -}}
+        ✅ {{ .workflow_run.name }} succeeded on `{{ .workflow_run.head_branch }}`
+      {{- else if eq .workflow_run.conclusion "failure" -}}
+        ❌ {{ .workflow_run.name }} failed on `{{ .workflow_run.head_branch }}`
+      {{- else if eq .workflow_run.conclusion "cancelled" -}}
+        🚫 {{ .workflow_run.name }} was cancelled on `{{ .workflow_run.head_branch }}`
+      {{- else -}}
+        🔄 {{ .workflow_run.name }} {{ .workflow_run.conclusion }} on `{{ .workflow_run.head_branch }}`
+      {{- end -}}
+
+      Triggered by {{ .sender.full_name }}
+    {{- else if eq .action "requested" -}}
+      🚀 {{ .workflow_run.name }} started on `{{ .workflow_run.head_branch }}`
+
+      Triggered by {{ .sender.full_name }}
+    {{- else -}}
+      🔄 {{ .workflow_run.name }} {{ .action }} on `{{ .workflow_run.head_branch }}`
+
+      Triggered by {{ .sender.full_name }}
+    {{- end -}}
+  {{- else if .workflow_job -}}
+    {{- if eq .action "completed" -}}
+      {{- if eq .workflow_job.conclusion "success" -}}
+        ✅ Job {{ .workflow_job.name }} succeeded
+
+        Branch: {{ .workflow_job.head_branch }}{{ if .workflow_job.runner_name }} • Runner: {{ .workflow_job.runner_name }}{{ end }}
+      {{- else if eq .workflow_job.conclusion "failure" -}}
+        ❌ Job {{ .workflow_job.name }} failed
+
+        Branch: {{ .workflow_job.head_branch }}{{ if .workflow_job.runner_name }} • Runner: {{ .workflow_job.runner_name }}{{ end }}
+      {{- else if eq .workflow_job.conclusion "cancelled" -}}
+        🚫 Job {{ .workflow_job.name }} was cancelled
+
+        Branch: {{ .workflow_job.head_branch }}{{ if .workflow_job.runner_name }} • Runner: {{ .workflow_job.runner_name }}{{ end }}
+      {{- else -}}
+        🔄 Job {{ .workflow_job.name }} {{ .workflow_job.conclusion }}
+
+        Branch: {{ .workflow_job.head_branch }}{{ if .workflow_job.runner_name }} • Runner: {{ .workflow_job.runner_name }}{{ end }}
+      {{- end -}}
+    {{- else -}}
+      🔄 Job {{ .workflow_job.name }} {{ .action }}
+
+      Branch: {{ .workflow_job.head_branch }}{{ if .workflow_job.runner_name }} • Runner: {{ .workflow_job.runner_name }}{{ end }}
+    {{- end -}}
+  {{- else if .issue -}}
+    {{- if eq .action "opened" -}}
+      🐛 {{ .sender.full_name }} opened issue #{{ .issue.number }}
+
+      {{ .issue.title }}
+    {{- else if eq .action "closed" -}}
+      ✅ {{ .sender.full_name }} closed issue #{{ .issue.number }}
+
+      {{ .issue.title }}
+    {{- else if eq .action "reopened" -}}
+      🔄 {{ .sender.full_name }} reopened issue #{{ .issue.number }}
+
+      {{ .issue.title }}
+    {{- else -}}
+      🏷️ {{ .sender.full_name }} {{ .action }} issue #{{ .issue.number }}
+
+      {{ .issue.title }}
+    {{- end -}}
+  {{- else if .pull_request -}}
+    {{- if eq .action "opened" -}}
+      🔀 {{ .sender.full_name }} opened pull request #{{ .pull_request.number }}
+
+      {{ .pull_request.title }}
+      
+      `{{ .pull_request.head.ref }}` → `{{ .pull_request.base.ref }}`
+    {{- else if eq .action "closed" -}}
+      {{- if .pull_request.merged -}}
+        🎉 {{ .sender.full_name }} merged pull request #{{ .pull_request.number }}
+
+        {{ .pull_request.title }}
+      {{- else -}}
+        ❌ {{ .sender.full_name }} closed pull request #{{ .pull_request.number }}
+
+        {{ .pull_request.title }}
+      {{- end -}}
+    {{- else if eq .action "reopened" -}}
+      🔄 {{ .sender.full_name }} reopened pull request #{{ .pull_request.number }}
+
+      {{ .pull_request.title }}
+    {{- else -}}
+      🔧 {{ .sender.full_name }} {{ .action }} pull request #{{ .pull_request.number }}
+
+      {{ .pull_request.title }}
+    {{- end -}}
+  {{- else if .release -}}
+    {{- if eq .action "published" -}}
+      🚀 {{ .sender.full_name }} published release {{ .release.tag_name }}
+
+      {{ .release.name }}
+    {{- else if eq .action "created" -}}
+      📦 {{ .sender.full_name }} created release {{ .release.tag_name }}
+
+      {{ .release.name }}
+    {{- else -}}
+      🏷️ {{ .sender.full_name }} {{ .action }} release {{ .release.tag_name }}
+
+      {{ .release.name }}
+    {{- end -}}
+  {{- else if .ref -}}
+    {{- if contains .ref "refs/heads/" -}}
+      🌿 {{ .sender.full_name }} {{ .action }} branch `{{ .ref | replace "refs/heads/" "" }}`
+    {{- else if contains .ref "refs/tags/" -}}
+      🏷️ {{ .sender.full_name }} {{ .action }} tag `{{ .ref | replace "refs/tags/" "" }}`
+    {{- else -}}
+      📝 {{ .sender.full_name }} {{ .action }} `{{ .ref }}`
+    {{- end -}}
+  {{- else -}}
+    📢 Repository activity by {{ .sender.full_name }}{{ if .action }} ({{ .action }}){{ end }}
+  {{- end -}}
+
+tags:
+  - "gitea"
+  - "{{ .repository.name | default \"repo\" | lower }}"
+  - >-
+    {{- if .commits -}}
+      push
+    {{- else if .workflow_run -}}
+      actions
+    {{- else if .workflow_job -}}
+      job
+    {{- else if .issue -}}
+      issue
+    {{- else if .pull_request -}}
+      {{- if .pull_request.merged -}}
+        merged
+      {{- else -}}
+        pr
+      {{- end -}}
+    {{- else if .release -}}
+      release
+    {{- else if .ref -}}
+      {{- if contains .ref "refs/heads/" -}}
+        branch
+      {{- else if contains .ref "refs/tags/" -}}
+        tag
+      {{- else -}}
+        ref
+      {{- end -}}
+    {{- else -}}
+      event
+    {{- end -}}
+
+priority: >-
+  {{- if .workflow_run -}}
+    {{- if eq .workflow_run.conclusion "failure" -}}
+      5
+    {{- else if eq .workflow_run.conclusion "success" -}}
+      3
+    {{- else if eq .action "completed" -}}
+      4
+    {{- else -}}
+      2
+    {{- end -}}
+  {{- else if .workflow_job -}}
+    {{- if eq .workflow_job.conclusion "failure" -}}
+      4
+    {{- else -}}
+      2
+    {{- end -}}
+  {{- else if .pull_request -}}
+    {{- if .pull_request.merged -}}
+      4
+    {{- else if eq .action "opened" -}}
+      3
+    {{- else -}}
+      2
+    {{- end -}}
+  {{- else if .release -}}
+    {{- if eq .action "published" -}}
+      4
+    {{- else -}}
+      3
+    {{- end -}}
+  {{- else if .issue -}}
+    {{- if eq .action "opened" -}}
+      3
+    {{- else -}}
+      2
+    {{- end -}}
+  {{- else if .commits -}}
+    {{- if contains (.ref | lower) "main" -}}
+      4
+    {{- else if contains (.ref | lower) "master" -}}
+      4
+    {{- else if contains (.ref | lower) "develop" -}}
+      3
+    {{- else -}}
+      2
+    {{- end -}}
+  {{- else -}}
+    2
+  {{- end -}}
+
+icon: >-
+  {{- if .workflow_run -}}
+    {{- if eq .workflow_run.conclusion "success" -}}
+      ✅
+    {{- else if eq .workflow_run.conclusion "failure" -}}
+      ❌
+    {{- else if eq .workflow_run.conclusion "cancelled" -}}
+      🚫
+    {{- else if eq .action "requested" -}}
+      🚀
+    {{- else -}}
+      🔄
+    {{- end -}}
+  {{- else if .workflow_job -}}
+    {{- if eq .workflow_job.conclusion "success" -}}
+      ✅
+    {{- else if eq .workflow_job.conclusion "failure" -}}
+      ❌
+    {{- else if eq .workflow_job.conclusion "cancelled" -}}
+      🚫
+    {{- else -}}
+      🔄
+    {{- end -}}
+  {{- else if .commits -}}
+    {{- if contains (.ref | lower) "main" -}}
+      🚀
+    {{- else if contains (.ref | lower) "master" -}}
+      🚀
+    {{- else if contains (.ref | lower) "develop" -}}
+      🔧
+    {{- else if contains (.ref | lower) "feature" -}}
+      ✨
+    {{- else if contains (.ref | lower) "fix" -}}
+      🔨
+    {{- else if contains (.ref | lower) "hotfix" -}}
+      🚨
+    {{- else -}}
+      📝
+    {{- end -}}
+  {{- else if .issue -}}
+    {{- if eq .action "opened" -}}
+      🐛
+    {{- else if eq .action "closed" -}}
+      ✅
+    {{- else if eq .action "reopened" -}}
+      🔄
+    {{- else -}}
+      🏷️
+    {{- end -}}
+  {{- else if .pull_request -}}
+    {{- if .pull_request.merged -}}
+      🎉
+    {{- else if eq .action "opened" -}}
+      🔀
+    {{- else if eq .action "closed" -}}
+      ❌
+    {{- else if eq .action "reopened" -}}
+      🔄
+    {{- else -}}
+      🔧
+    {{- end -}}
+  {{- else if .release -}}
+    {{- if eq .action "published" -}}
+      🚀
+    {{- else -}}
+      📦
+    {{- end -}}
+  {{- else if .ref -}}
+    {{- if contains .ref "refs/heads/" -}}
+      🌿
+    {{- else if contains .ref "refs/tags/" -}}
+      🏷️
+    {{- else -}}
+      📝
+    {{- end -}}
+  {{- else -}}
+    🍵
+  {{- end -}}
+
+# Smart delays to reduce spam
+delay: >-
+  {{- if .commits -}}
+    {{- $commitCount := len .commits -}}
+    {{- if and (ge $commitCount 6) -}}
+      1m
+    {{- else if and (ge $commitCount 2) -}}
+      30s
+    {{- end -}}
+  {{- else if and .issue (eq .action "labeled") -}}
+    20s
+  {{- else if and .pull_request (eq .action "synchronized") -}}
+    45s
+  {{- end -}}

@@ -1,0 +1,203 @@
+# Use the Microsoft Teams type in StatusCake
+# URL: https://example.com/my_topic?template=statuscake
+#
+# Created with Claude and pretty untested.
+# Seems to work fine so far, but bugs may exist. 
+# Use at your own risk. :)
+#
+
+topic: "statuscake"
+
+title: "🍰 StatusCake Monitor"
+
+message: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if .content -}}
+        {{- if .content.body -}}
+          {{- range .content.body -}}
+            {{- if .items -}}
+              {{- range .items -}}
+                {{- if .text -}}
+                  {{- if contains (.text | lower) "back online" -}}
+                    🎉 {{ .text }}
+                  {{- else if contains (.text | lower) "down" -}}
+                    🚨 {{ .text }}
+                  {{- else if contains (.text | lower) "slow" -}}
+                    🐌 {{ .text }}
+                  {{- else -}}
+                    📡 {{ .text }}
+                  {{- end -}}
+                {{- end -}}
+              {{- end -}}
+            {{- else if .text -}}
+              {{- if contains (.text | lower) "back online" -}}
+                \n{{ .text }}
+              {{- else if contains (.text | lower) "down" -}}
+                \n{{ .text }}
+              {{- else if contains (.text | lower) "slow" -}}
+                \n{{ .text }}
+              {{- else -}}
+                \n{{ .text }}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    📡 StatusCake notification received
+  {{- end -}}
+
+tags:
+  - "statuscake"
+  - >-
+    {{- if .attachments -}}
+      {{- range .attachments -}}
+        {{- if .content -}}
+          {{- if .content.body -}}
+            {{- range .content.body -}}
+              {{- if eq .style "good" -}}
+                success
+              {{- else if eq .style "attention" -}}
+                warning
+              {{- else if eq .style "destructive" -}}
+                error
+              {{- else if .items -}}
+                {{- range .items -}}
+                  {{- if contains (.text | lower) "down" -}}
+                    error
+                  {{- else if contains (.text | lower) "up" -}}
+                    success
+                  {{- else if contains (.text | lower) "slow" -}}
+                    warning
+                  {{- else -}}
+                    info
+                  {{- end -}}
+                {{- end -}}
+              {{- else if .text -}}
+                {{- if contains (.text | lower) "down" -}}
+                  error
+                {{- else if contains (.text | lower) "up" -}}
+                  success
+                {{- else if contains (.text | lower) "slow" -}}
+                  warning
+                {{- else -}}
+                  info
+                {{- end -}}
+              {{- else -}}
+                info
+              {{- end -}}
+            {{- end -}}
+          {{- else -}}
+            info
+          {{- end -}}
+        {{- else -}}
+          info
+        {{- end -}}
+      {{- end -}}
+    {{- else -}}
+      info
+    {{- end -}}
+
+priority: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if .content -}}
+        {{- if .content.body -}}
+          {{- range .content.body -}}
+            {{- if eq .style "destructive" -}}
+              5
+            {{- else if eq .style "attention" -}}
+              4
+            {{- else if eq .style "good" -}}
+              2
+            {{- else if .items -}}
+              {{- range .items -}}
+                {{- if contains (.text | lower) "down" -}}
+                  5
+                {{- else if contains (.text | lower) "critical" -}}
+                  5
+                {{- else if contains (.text | lower) "slow" -}}
+                  4
+                {{- else if contains (.text | lower) "up" -}}
+                  2
+                {{- else -}}
+                  3
+                {{- end -}}
+              {{- end -}}
+            {{- else if .text -}}
+              {{- if contains (.text | lower) "down" -}}
+                5
+              {{- else if contains (.text | lower) "critical" -}}
+                5
+              {{- else if contains (.text | lower) "slow" -}}
+                4
+              {{- else if contains (.text | lower) "up" -}}
+                2
+              {{- else -}}
+                3
+              {{- end -}}
+            {{- else -}}
+              3
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          3
+        {{- end -}}
+      {{- else -}}
+        3
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    3
+  {{- end -}}
+
+icon: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if .content -}}
+        {{- if .content.body -}}
+          {{- range .content.body -}}
+            {{- if eq .style "destructive" -}}
+              🚨
+            {{- else if eq .style "attention" -}}
+              ⚠️
+            {{- else if eq .style "good" -}}
+              ✅
+            {{- else if .items -}}
+              {{- range .items -}}
+                {{- if contains (.text | lower) "down" -}}
+                  🚨
+                {{- else if contains (.text | lower) "up" -}}
+                  ✅
+                {{- else if contains (.text | lower) "slow" -}}
+                  ⚠️
+                {{- else -}}
+                  📊
+                {{- end -}}
+              {{- end -}}
+            {{- else if .text -}}
+              {{- if contains (.text | lower) "down" -}}
+                🚨
+              {{- else if contains (.text | lower) "up" -}}
+                ✅
+              {{- else if contains (.text | lower) "slow" -}}
+                ⚠️
+              {{- else -}}
+                📊
+              {{- end -}}
+            {{- else -}}
+              📊
+            {{- end -}}
+          {{- end -}}
+        {{- else -}}
+          📊
+        {{- end -}}
+      {{- else -}}
+        📊
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    📊
+  {{- end -}}

@@ -1,0 +1,184 @@
+# Use the Slack type in TrueNAS
+# URL: https://example.com/my_topic?template=truenas
+#
+# Created with Claude and pretty untested.
+# Seems to work fine so far, but bugs may exist.
+# Use at your own risk. :)
+#
+
+topic: "{{ .username | default \"truenas\" | lower | replace \" \" \"-\" }}"
+
+title: >-
+  {{- if .username -}}
+    🗄️ {{ .username }}
+  {{- else -}}
+    🗄️ TrueNAS Alert
+  {{- end -}}
+
+message: >-
+  {{- .text -}}
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if .pretext }}
+
+  {{ .pretext }}{{ end -}}
+      {{- if .title }}
+
+  {{ .title }}{{ end -}}
+      {{- if .text }}
+
+  {{ .text }}{{ end -}}
+      {{- if .fields }}
+        {{- range .fields }}
+
+  • {{ .title }}: {{ .value }}
+        {{- end -}}
+      {{- end -}}
+      {{- if .footer }}
+
+  _{{ .footer }}_{{ if .ts }} • <t:{{ .ts }}:R>{{ end }}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+
+tags:
+  - "truenas"
+  - "{{ .username | default \"system\" | lower | replace \" \" \"-\" }}"
+  - >-
+    {{- if .attachments -}}
+      {{- range .attachments -}}
+        {{- if eq .color "danger" -}}
+          critical
+        {{- else if eq .color "warning" -}}
+          warning
+        {{- else if eq .color "good" -}}
+          success
+        {{- else if or (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "error") (contains (.text | lower) "degraded") -}}
+          critical
+        {{- else if or (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+          warning
+        {{- else if or (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+          success
+        {{- else -}}
+          info
+        {{- end -}}
+      {{- end -}}
+    {{- else if or (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "error") (contains (.text | lower) "degraded") (contains (.text | lower) "offline") -}}
+      critical
+    {{- else if or (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+      warning
+    {{- else if or (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+      success
+    {{- else -}}
+      info
+    {{- end -}}
+
+priority: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if or (eq .color "danger") (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "offline") (contains (.text | lower) "degraded") -}}
+        5
+      {{- else if or (eq .color "warning") (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+        4
+      {{- else if or (eq .color "good") (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+        2
+      {{- else -}}
+        3
+      {{- end -}}
+    {{- end -}}
+  {{- else if or (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "offline") (contains (.text | lower) "degraded") -}}
+    5
+  {{- else if or (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+    4
+  {{- else if or (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+    2
+  {{- else -}}
+    3
+  {{- end -}}
+
+icon: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if or (eq .color "danger") (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "offline") -}}
+        🚨
+      {{- else if or (eq .color "warning") (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+        ⚠️
+      {{- else if or (eq .color "good") (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+        ✅
+      {{- else if contains (.text | lower) "pool" -}}
+        💾
+      {{- else if contains (.text | lower) "disk" -}}
+        💿
+      {{- else if contains (.text | lower) "scrub" -}}
+        🧹
+      {{- else if contains (.text | lower) "backup" -}}
+        📦
+      {{- else if contains (.text | lower) "snapshot" -}}
+        📸
+      {{- else if contains (.text | lower) "ups" -}}
+        🔋
+      {{- else if contains (.text | lower) "temperature" -}}
+        🌡️
+      {{- else if contains (.text | lower) "network" -}}
+        🌐
+      {{- else if contains (.text | lower) "jail" -}}
+        🏢
+      {{- else if contains (.text | lower) "plugin" -}}
+        🔌
+      {{- else -}}
+        🗄️
+      {{- end -}}
+    {{- end -}}
+  {{- else if or (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "offline") -}}
+    🚨
+  {{- else if or (contains (.text | lower) "warning") (contains (.text | lower) "alert") (contains (.text | lower) "slow") -}}
+    ⚠️
+  {{- else if or (contains (.text | lower) "success") (contains (.text | lower) "completed") (contains (.text | lower) "healthy") (contains (.text | lower) "online") -}}
+    ✅
+  {{- else if contains (.text | lower) "pool" -}}
+    💾
+  {{- else if contains (.text | lower) "disk" -}}
+    💿
+  {{- else if contains (.text | lower) "scrub" -}}
+    🧹
+  {{- else if contains (.text | lower) "backup" -}}
+    📦
+  {{- else if contains (.text | lower) "snapshot" -}}
+    📸
+  {{- else if contains (.text | lower) "ups" -}}
+    🔋
+  {{- else if contains (.text | lower) "temperature" -}}
+    🌡️
+  {{- else if contains (.text | lower) "network" -}}
+    🌐
+  {{- else if contains (.text | lower) "jail" -}}
+    🏢
+  {{- else if contains (.text | lower) "plugin" -}}
+    🔌
+  {{- else -}}
+    🗄️
+  {{- end -}}
+
+# Set click URL from attachments if available
+click: >-
+  {{- if .attachments -}}
+    {{- range .attachments -}}
+      {{- if .title_link }}{{ .title_link }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+
+# Add email notifications for critical TrueNAS issues
+email: >-
+  {{- if or (contains (.text | lower) "critical") (contains (.text | lower) "failed") (contains (.text | lower) "offline") (contains (.text | lower) "degraded") -}}
+    your-email@example.com
+  {{- end -}}
+
+# Smart delays to reduce notification spam
+delay: >-
+  {{- if contains (.text | lower) "scrub" -}}
+    2m
+  {{- else if contains (.text | lower) "backup" -}}
+    1m
+  {{- else if or (contains (.text | lower) "info") (contains (.text | lower) "completed") -}}
+    30s
+  {{- end -}}
