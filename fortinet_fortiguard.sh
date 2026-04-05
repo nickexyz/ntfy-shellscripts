@@ -39,7 +39,7 @@ if [ ! -f "$fortinet_fortiguard_old_posts_path"/fortinet_fortiguard_old_posts.tx
 fi
 
 # Extract items, then loop
-grep -oP '<item>.*?</item>' /tmp/fortinet_fortiguard_feed.xml | while IFS= read -r ITEM; do
+tr '\n' ' ' < /tmp/fortinet_fortiguard_feed.xml | grep -oP '<item>.*?</item>' | while IFS= read -r ITEM; do
   title=$(echo "$ITEM" | grep -oP '<title>.*?</title>' | sed 's/<title>\(.*\)<\/title>/\1/' | sed 's/&amp;/\&/g')
   description=$(echo "$ITEM" | grep -oP '<description>.*?</description>' | sed 's/<description>\(.*\)<\/description>/\1/' | sed 's/&amp;/\&/g')
   link=$(echo "$ITEM" | grep -oP '<link>.*?</link>' | sed 's/<link>\(.*\)<\/link>/\1/')
